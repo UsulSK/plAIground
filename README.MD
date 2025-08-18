@@ -19,9 +19,10 @@ A possible setup for Windows:
 - Download `koboldcpp.exe` from [here](https://github.com/LostRuins/koboldcpp/releases/tag/v1.97.4) .
 - Download a LLM as explained 
  [here](https://github.com/LostRuins/koboldcpp?tab=readme-ov-file#Obtaining-a-GGUF-model) . 
- For example `Ministral-8B-Instruct-2410-Q6_K_L.gguf` from [here](https://huggingface.co/bartowski/Ministral-8B-Instruct-2410-GGUF). Put it in the same folder as `kobold.cpp.exe` .
+ For example `Meta-Llama-3-8B-Instruct.Q5_0.gguf` from [here](https://huggingface.co/QuantFactory/Meta-Llama-3-8B-Instruct-GGUF/tree/main) .  
+ Put it in the same folder as `kobold.cpp.exe` .
 - In a `cmd` console, you can now start the LLM from the same folder with:  
-  `koboldcpp.exe --model Ministral-8B-Instruct-2410-Q6_K_L.gguf --host 127.0.0.1 --port 5001 --chatcompletionsadapter kobold`
+  `koboldcpp.exe --model Meta-Llama-3-8B-Instruct.Q5_0.gguf --host 127.0.0.1 --port 5001 --chatcompletionsadapter kobold`
 
 The LLM should run now and you can use the REST endpoint to use it!
 
