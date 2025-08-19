@@ -2,6 +2,9 @@ package org.usul.plaiground.games.decrypto;
 
 import com.google.inject.Inject;
 import org.usul.plaiground.games.decrypto.entities.*;
+import org.usul.plaiground.games.decrypto.llmroles.DecryptorLlm;
+import org.usul.plaiground.games.decrypto.llmroles.EncryptorLlm;
+import org.usul.plaiground.games.decrypto.llmroles.InterceptorLlm;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,15 +18,22 @@ public class GameMaster {
     private GameWorld gameWorld = null;
 
     @Inject
-    PlayerBrain brain;
+    EncryptorLlm brainEncryptor;
+
+    @Inject
+    DecryptorLlm brainDecryptor;
+
+    @Inject
+    InterceptorLlm brainInterceptor;
 
     public void playGame() {
+        GameLog gameLog = this.gameWorld.getGameLog();
         for (this.currRound = 0; this.currRound < MAX_ROUNDS; this.currRound++) {
-            this.gameWorld.getGameLog().addRound();
+            this.gameWorld.getGameLog().addRound(this.gameWorld.getTeam1(), this.gameWorld.getTeam2());
             this.playRound();
 
-            if ((this.gameWorld.getTeam1().getInterceptionTokens() >= 2) || (this.gameWorld.getTeam2().getInterceptionTokens() >= 2)
-                    || (this.gameWorld.getTeam1().getMiscommunicationTokens() >= 2) || (this.gameWorld.getTeam2().getMiscommunicationTokens() >= 2)) {
+            if ((gameLog.getRounds().getLast().getTeam1InterceptTokens() >= 2) || (gameLog.getRounds().getLast().getTeam2InterceptTokens() >= 2)
+                    || (gameLog.getRounds().getLast().getTeam1MissCommTokens() >= 2) || (gameLog.getRounds().getLast().getTeam2MissCommTokens() >= 2)) {
                 break;
             }
         }
@@ -33,21 +43,22 @@ public class GameMaster {
 
     public void setGameWorld(GameWorld gameWorld) {
         this.gameWorld = gameWorld;
-        this.brain.setGameWorld(gameWorld);
+        this.brainEncryptor.setGameWorld(gameWorld);
+        this.brainDecryptor.setGameWorld(gameWorld);
+        this.brainInterceptor.setGameWorld(gameWorld);
     }
 
     private void determineWinningTeam() {
-        Team team1 = this.gameWorld.getTeam1();
-        Team team2 = this.gameWorld.getTeam2();
-        int pointsTeam1 = team1.getInterceptionTokens() -team1.getMiscommunicationTokens();
-        int pointsTeam2 = team2.getInterceptionTokens() - team2.getMiscommunicationTokens();
+        Round lastRound = this.gameWorld.getGameLog().getRounds().getLast();
+        int pointsTeam1 = lastRound.getTeam1InterceptTokens() - lastRound.getTeam1MissCommTokens();
+        int pointsTeam2 = lastRound.getTeam2InterceptTokens() - lastRound.getTeam2MissCommTokens();
 
         if (pointsTeam1 == pointsTeam2) {
             return;
         } else if (pointsTeam1 > pointsTeam2) {
-            this.gameWorld.setWinningTeam(team1);
+            this.gameWorld.setWinningTeam(this.gameWorld.getTeam1());
         } else {
-            this.gameWorld.setWinningTeam(team2);
+            this.gameWorld.setWinningTeam(this.gameWorld.getTeam2());
         }
     }
 
@@ -84,21 +95,23 @@ public class GameMaster {
         List<Integer> code = this.generateCode();
         teamRound.getCode().addAll(code);
 
-        List<String> encryptedCodes = brain.encrypt(currEncryptor, code, this.currRound);
+        List<String> encryptedCodes = brainEncryptor.encrypt(currEncryptor, code, this.currRound);
         teamRound.getEncryptedCode().addAll(encryptedCodes);
 
-        List<Integer> guessedCodes = brain.intercept(interceptingTeam, encryptedCodes, this.currRound);
-        teamRound.getGuessedCodeByOtherTeam().addAll(guessedCodes);
+        if( round.getRoundNumber() > 0 ) {
+            List<Integer> guessedCodes = brainInterceptor.intercept(interceptingTeam, encryptedCodes, this.currRound);
+            teamRound.getGuessedCodeByOtherTeam().addAll(guessedCodes);
 
-        if (guessedCodes.equals(code)) {
-            interceptingTeam.addInterceptionTokensToken();
+            if (guessedCodes.equals(code)) {
+                round.addInterceptionTokensToken(interceptingTeam);
+            }
         }
 
-        List<Integer> decryptedCodes = brain.decrypt(currDecryptor, encryptedCodes, this.currRound);
+        List<Integer> decryptedCodes = brainDecryptor.decrypt(currDecryptor, encryptedCodes, this.currRound);
         teamRound.getGuessedCodeByOwnTeam().addAll(decryptedCodes);
 
         if (!decryptedCodes.equals(code)) {
-            transmittingTeam.addMiscommunicationToken();
+            round.addMiscommunicationToken(transmittingTeam);
         }
     }
 

@@ -64,9 +64,7 @@ public class Decrypto {
     }
 
     private void addKeywords(GameWorld gameWorld) {
-        String commaSeparatedNounList = this.fileReader.readTextFile("decrypto/nouns");
-
-        List<String> keywords = parseNouns(commaSeparatedNounList);
+        List<String> keywords = this.fileReader.readEntriesForNewlineSeparatedFile("decrypto/nouns");
         Collections.shuffle(keywords);
 
         for (int i = 0; i < 4; i++) {
@@ -75,13 +73,5 @@ public class Decrypto {
         for (int i = 4; i < 8; i++) {
             gameWorld.getTeam2().getKeywords().add(keywords.get(i));
         }
-    }
-
-    public static List<String> parseNouns(String commaSeparatedNounList) {
-        String[] nounsArray = commaSeparatedNounList.split(",");
-        Set<String> result = new HashSet<>();
-        Collections.addAll(result, nounsArray);
-
-        return new ArrayList<>(result);
     }
 }

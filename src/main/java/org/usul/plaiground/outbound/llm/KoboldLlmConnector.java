@@ -17,7 +17,6 @@ public class KoboldLlmConnector {
     private static final Logger log = LoggerFactory.getLogger(KoboldLlmConnector.class);
 
     public String chat(String msg) {
-        log.info("prompting llm: " + msg);
         String baseUrl = "http://127.0.0.1:5001"; // KoboldCpp API
         String endpoint = "/api/v1/generate";
 
@@ -27,8 +26,8 @@ public class KoboldLlmConnector {
         JSONObject payload = new JSONObject();
         payload.put("prompt", msg);
         payload.put("max_length", 400);
-        payload.put("temperature", 0.5);
-    //    payload.put("seed", seed);  // random seed for different results each call
+        payload.put("temperature", 0.7);
+        payload.put("seed", seed);  // random seed for different results each call
 
         HttpResponse<String> response = null;
         try {
@@ -44,7 +43,6 @@ public class KoboldLlmConnector {
             throw new RuntimeException(e);
         }
         String responseText = response.body();
-        log.info("answer from llm: " + responseText);
 
         ObjectMapper mapper = new ObjectMapper();
         KoboldLlmResponse parsedReponse = null;
@@ -55,7 +53,6 @@ public class KoboldLlmConnector {
         }
 
         String textResponse = parsedReponse.getResults().get(0).getText();
-        log.info("parsed response: " + textResponse);
 
         return textResponse;
     }

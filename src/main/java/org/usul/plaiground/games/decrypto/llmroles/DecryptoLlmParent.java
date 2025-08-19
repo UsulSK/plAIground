@@ -1,44 +1,21 @@
-package org.usul.plaiground.games.decrypto;
+package org.usul.plaiground.games.decrypto.llmroles;
 
-import com.google.inject.Inject;
 import org.usul.plaiground.games.decrypto.entities.*;
-import org.usul.plaiground.outbound.llm.KoboldLlmConnector;
-import org.usul.plaiground.utils.FileReader;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PlayerBrain {
+public class DecryptoLlmParent {
 
-    private GameWorld gameWorld;
+    protected GameWorld gameWorld;
 
-    @Inject
-    private FileReader fileReader;
+    protected String getPromptForGeneralTemplate(String promptTemplateGeneral, Player player, int roundNumber) {
+        promptTemplateGeneral = promptTemplateGeneral.replace("{game_history}", this.getGameHistoryLlmSerialization(player, roundNumber));
 
-    @Inject
-    KoboldLlmConnector llm;
-
-    public void setGameWorld(GameWorld gameWorld) {
-        this.gameWorld = gameWorld;
+        return promptTemplateGeneral;
     }
 
-    public List<String> encrypt(Player player, List<Integer> code, int roundNumber) {
-        String prompt_general = this.fileReader.readTextFile("decrypto/prompt_general");
-        String prompt_encrypt = this.fileReader.readTextFile("decrypto/prompt_encryptor");
-        String final_prompt = prompt_general + "\n" + prompt_encrypt;
-
-        final_prompt = final_prompt.replace("{team_setup}", this.getTeamSetupLlmSerialization());
-        final_prompt = final_prompt.replace("{game_history}", this.getGameHistoryLlmSerialization(player, roundNumber));
-        final_prompt = final_prompt.replace("{secret_words}", this.getSecretWordsLlmSerialization(player));
-        final_prompt = final_prompt.replace("{code}", this.getCodeText(code));
-
-        String answer = llm.chat(final_prompt);
-
-        return new ArrayList<>(List.of("apple", "banana", "cherry"));
-    }
-
-    private String getSecretWordsLlmSerialization(Player player) {
+    protected String getSecretWordsLlmSerialization(Player player) {
         List<String> secretWords = this.gameWorld.getTeamOfPlayer(player).getKeywords();
         StringBuilder swSb = new StringBuilder();
 
@@ -70,6 +47,8 @@ public class PlayerBrain {
 
             if (team1Log.isEmpty() && team2Log.isEmpty()) {
                 gameHistory.append("-");
+            } else if (round.getRoundNumber() == 0) {
+                gameHistory.append("In the first round there is no intercepting the other team.\n\n");
             }
 
             if (!team1Log.isEmpty()) {
@@ -106,20 +85,32 @@ public class PlayerBrain {
         teamroundText.append(" and gave clues ");
         teamroundText.append(this.getCluesText(teamRound.getEncryptedCode()));
         teamroundText.append(".\n");
-        teamroundText.append(getTeamText(player, otherTeam));
-        teamroundText.append(" guessed ");
-        teamroundText.append(teamRound.getGuessedCodeByOtherTeam().stream().map(String::valueOf).reduce("", String::concat));
-        teamroundText.append(" for the other teams code.\n");
+
+        if (round.getRoundNumber() > 0) {
+            teamroundText.append(getTeamText(player, otherTeam));
+            teamroundText.append(" guessed ");
+            teamroundText.append(teamRound.getGuessedCodeByOtherTeam().stream().map(String::valueOf).reduce("", String::concat));
+            teamroundText.append(" for the other teams code.");
+            if (teamRound.getCode().equals(teamRound.getGuessedCodeByOtherTeam()) && (this.gameWorld.getTeamOfPlayer(player) == team)) {
+                teamroundText.append(" This guess was CORRECT! The clues here have been maybe too obvious.");
+            }
+            teamroundText.append("\n");
+        }
+
         teamroundText.append(getTeamText(player, team));
         teamroundText.append(" guessed ");
         teamroundText.append(teamRound.getGuessedCodeByOwnTeam().stream().map(String::valueOf).reduce("", String::concat));
-        teamroundText.append(" for own teams code.\n");
+        teamroundText.append(" for own teams code.");
+        if (!teamRound.getCode().equals(teamRound.getGuessedCodeByOwnTeam())) {
+            teamroundText.append(" This guess was NOT correct! The clues here may have been too obscure.");
+        }
+        teamroundText.append("\n");
 
         return teamroundText.toString();
     }
 
-    private String getCodeText(List<Integer> code) {
-        return code.stream().map(String::valueOf).reduce("", String::concat);
+    public void setGameWorld(GameWorld gameWorld) {
+        this.gameWorld = gameWorld;
     }
 
     private String getCluesText(List<String> clues) {
@@ -127,40 +118,18 @@ public class PlayerBrain {
     }
 
     private String getTeamText(Player player, Team team) {
-        String teamText = "team " + team.getName() + " (";
+        String teamText = "";
+
         if (this.gameWorld.getTeamOfPlayer(player) == team) {
-            teamText = teamText + "your team)";
+            teamText = teamText + "Your team";
         } else {
-            teamText = teamText + "opponent team)";
+            teamText = teamText + "Oponent team";
         }
 
         return teamText;
     }
 
-    private String getTeamSetupLlmSerialization() {
-        String teamSetup = this.getTeamSetupOfOneTeamLlmSerialization(this.gameWorld.getTeam1()) + "\n";
-        teamSetup = teamSetup + this.getTeamSetupOfOneTeamLlmSerialization(this.gameWorld.getTeam2());
-
-        return teamSetup;
-    }
-
-    private String getTeamSetupOfOneTeamLlmSerialization(Team team) {
-        String teamSetup = "Team " + team.getName() + " has players: ";
-
-        List<String> playerNames = team.getPlayers().stream()
-                .map(Player::getName)
-                .collect(Collectors.toList());
-
-        teamSetup += String.join(", ", playerNames);
-
-        return teamSetup;
-    }
-
-    public List<Integer> intercept(Team interceptingTeam, List<String> encryptedCode, int roundNumber) {
-        return new ArrayList<>(List.of(4, 3, 2));
-    }
-
-    public List<Integer> decrypt(Player player, List<String> encryptedCode, int roundNumber) {
-        return new ArrayList<>(List.of(2, 1, 3));
+    protected String getCodeText(List<Integer> code) {
+        return code.stream().map(String::valueOf).reduce("", String::concat);
     }
 }

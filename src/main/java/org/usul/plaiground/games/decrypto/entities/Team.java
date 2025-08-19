@@ -11,7 +11,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@JsonPropertyOrder({ "players", "keywords" })
+@JsonPropertyOrder({"players", "keywords"})
 public class Team extends ParentEntity {
     private String name;
 
@@ -19,9 +19,6 @@ public class Team extends ParentEntity {
     private List<Player> players = new ArrayList<>();
 
     private List<String> keywords = new ArrayList<>();
-
-    private int miscommunicationTokens = 0;
-    private int interceptionTokens = 0;
 
     public Team(String name) {
         this.name = name;
@@ -39,13 +36,5 @@ public class Team extends ParentEntity {
         return players.stream()
                 .map(Player::getName)
                 .toList();
-    }
-
-    public void addMiscommunicationToken() {
-        this.miscommunicationTokens++;
-    }
-
-    public void addInterceptionTokensToken() {
-        this.interceptionTokens++;
     }
 }

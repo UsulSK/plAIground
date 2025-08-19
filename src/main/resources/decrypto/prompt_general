@@ -32,10 +32,5 @@ The Code Giver gets the 3-digit-code 231. He chooses the following clues (which 
 1 protection
 With this information the Guesser and the opponent team now guess the code.
 
-=== Current Game ===
-
-Teams:
-{team_setup}
-
-Game history so far:
+=== Game History of Current Game ===
 {game_history}

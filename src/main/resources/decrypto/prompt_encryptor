@@ -23,6 +23,8 @@ JSON like this:
 === Task ===
 You are the Code Giver!
 The code you want your teammate to guess is: {code}.
+The opponent team already knows the following past clues: {used_clues} .
+So try to avoid giving similar clues per digit as before or the opponent team can easily guess the code.
 Your teams secret words and their number are:
 {secret_words}
 Give three clues which relate to the three digits of the given code. For each clue, give a short reason why you picked that clue.

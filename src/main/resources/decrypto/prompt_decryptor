@@ -1,0 +1,29 @@
+=== Role ===
+You are the Guesser! As the Guesser, your goal is to guess the code of the Code giver correctly.
+
+=== Output Format ===
+JSON like this:
+{
+ "code_for_first_digit": {
+    "code": 2,
+    "reason": "A very short explanation why this code was chosen."
+ },
+ "clue_for_second_digit": {
+    "code": 3,
+    "reason": "A very short explanation why this code was chosen."
+ },
+ "clue_for_third_digit": {
+    "code": 1,
+    "reason": "A very short explanation why this code was chosen."
+ }
+}
+
+
+=== Task ===
+You are the Guesser!
+The clues from your team-mate are: {clues}.
+Your teams secret words and their number are:
+{secret_words}
+Each clue refers to one of your secret words and thus the position of the secret word is then the digit for that clue.
+
+=== Now Output ===
