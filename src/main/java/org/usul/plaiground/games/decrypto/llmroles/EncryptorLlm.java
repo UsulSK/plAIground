@@ -3,26 +3,17 @@ package org.usul.plaiground.games.decrypto.llmroles;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.usul.plaiground.games.decrypto.entities.*;
-import org.usul.plaiground.outbound.llm.KoboldLlmConnector;
 import org.usul.plaiground.utils.FileReader;
 import org.usul.plaiground.utils.StringParser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class EncryptorLlm extends DecryptoLlmParent {
 
-    private static final Logger log = LoggerFactory.getLogger(EncryptorLlm.class);
-
     @Inject
     private FileReader fileReader;
-
-    @Inject
-    KoboldLlmConnector llm;
 
     public List<String> encrypt(Player player, List<Integer> code, int roundNumber) {
         String prompt = this.createPrompt(player, code, roundNumber);
@@ -33,8 +24,12 @@ public class EncryptorLlm extends DecryptoLlmParent {
             return new ArrayList<>(List.of("clueBanana", "clueApple", "clueOrange"));
         }
 
-        String answer = llm.chat(prompt);
+        List<String> clues = this.useLlm(prompt, this::parseAnswer);
 
+        return clues;
+    }
+
+    private List<String> parseAnswer(String answer) {
         List<String> clues = new ArrayList<>();
         try {
             String jsonPartOfAnswer = StringParser.parseJson(answer);

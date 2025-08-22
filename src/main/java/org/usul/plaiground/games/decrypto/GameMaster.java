@@ -1,6 +1,8 @@
 package org.usul.plaiground.games.decrypto;
 
 import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.usul.plaiground.games.decrypto.entities.*;
 import org.usul.plaiground.games.decrypto.llmroles.DecryptorLlm;
 import org.usul.plaiground.games.decrypto.llmroles.EncryptorLlm;
@@ -11,6 +13,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class GameMaster {
+
+    private static final Logger log = LoggerFactory.getLogger(GameMaster.class);
     private final static int MAX_ROUNDS = 8;
 
     private int currRound = 0;
@@ -30,6 +34,9 @@ public class GameMaster {
         GameLog gameLog = this.gameWorld.getGameLog();
         for (this.currRound = 0; this.currRound < MAX_ROUNDS; this.currRound++) {
             this.gameWorld.getGameLog().addRound(this.gameWorld.getTeam1(), this.gameWorld.getTeam2());
+
+            log.info("\nROUND " + (currRound + 1) + "\n");
+
             this.playRound();
 
             if ((gameLog.getRounds().getLast().getTeam1InterceptTokens() >= 2) || (gameLog.getRounds().getLast().getTeam2InterceptTokens() >= 2)
@@ -83,6 +90,7 @@ public class GameMaster {
     private void playRoundForTeam(Team transmittingTeam, Team interceptingTeam) {
         Player currEncryptor = this.getCurrentEncryptor(transmittingTeam);
         Player currDecryptor = transmittingTeam.getOtherPlayer(currEncryptor);
+        Player currInterceptor = interceptingTeam.getPlayers().getFirst();
 
         Round round = this.gameWorld.getGameLog().getRounds().get(this.currRound);
         TeamRound teamRound = new TeamRound();
@@ -95,23 +103,31 @@ public class GameMaster {
         List<Integer> code = this.generateCode();
         teamRound.getCode().addAll(code);
 
+        log.info("\n" + transmittingTeam.getName() + " ENCRYPT secret words " + transmittingTeam.getKeywords() + " and code " + code);
         List<String> encryptedCodes = brainEncryptor.encrypt(currEncryptor, code, this.currRound);
+        log.info("Encrypted: " + encryptedCodes + "\n");
         teamRound.getEncryptedCode().addAll(encryptedCodes);
 
-        if( round.getRoundNumber() > 0 ) {
-            List<Integer> guessedCodes = brainInterceptor.intercept(interceptingTeam, encryptedCodes, this.currRound);
+        if (round.getRoundNumber() > 0) {
+            log.info("\n" + interceptingTeam.getName() + " INTERCEPT");
+            List<Integer> guessedCodes = brainInterceptor.intercept(currInterceptor, encryptedCodes, this.currRound);
+            log.info("Intercept guess: " + guessedCodes + "\n");
             teamRound.getGuessedCodeByOtherTeam().addAll(guessedCodes);
 
             if (guessedCodes.equals(code)) {
                 round.addInterceptionTokensToken(interceptingTeam);
+                log.info("\n INTERCEPTION SUCCEEDED FOR TEAM " + interceptingTeam.getName() + "! \n");
             }
         }
 
+        log.info("\n" + transmittingTeam.getName() + " DECRYPT");
         List<Integer> decryptedCodes = brainDecryptor.decrypt(currDecryptor, encryptedCodes, this.currRound);
+        log.info("Guesser (decryptor) guess: " + decryptedCodes + "\n");
         teamRound.getGuessedCodeByOwnTeam().addAll(decryptedCodes);
 
         if (!decryptedCodes.equals(code)) {
             round.addMiscommunicationToken(transmittingTeam);
+            log.info("\n TEAM GUESSED OWN CODE WRONG: " + transmittingTeam.getName() + "! \n");
         }
     }
 

@@ -1,13 +1,23 @@
 package org.usul.plaiground.games.decrypto.llmroles;
 
+import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.usul.plaiground.games.decrypto.entities.*;
+import org.usul.plaiground.outbound.llm.KoboldLlmConnector;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class DecryptoLlmParent {
 
+    protected static final Logger log = LoggerFactory.getLogger(DecryptoLlmParent.class);
     protected GameWorld gameWorld;
+
+    @Inject
+    private KoboldLlmConnector llm;
 
     protected String getPromptForGeneralTemplate(String promptTemplateGeneral, Player player, int roundNumber) {
         promptTemplateGeneral = promptTemplateGeneral.replace("{game_history}", this.getGameHistoryLlmSerialization(player, roundNumber));
@@ -131,5 +141,42 @@ public class DecryptoLlmParent {
 
     protected String getCodeText(List<Integer> code) {
         return code.stream().map(String::valueOf).reduce("", String::concat);
+    }
+
+    protected String getCluesLlmSerialization(List<String> clues) {
+        String result = clues.stream()
+                .map(s -> "[" + s + "]")
+                .collect(Collectors.joining(" "));
+        return result;
+    }
+
+    protected <T> List<T> useLlm(String prompt, Function<String, List<T>> parser) {
+        int maxRetries = 5;
+
+        String answer = null;
+        int currTry = 0;
+        boolean parsingSucceeded = true;
+        List<T> parsedAnswer = new ArrayList<>();
+        do {
+            parsingSucceeded = true;
+            if (currTry >= maxRetries) {
+                break;
+            }
+
+            try {
+                answer = this.llm.chat(prompt);
+                parsedAnswer = parser.apply(answer);
+            } catch (Exception e) {
+                parsingSucceeded = false;
+                currTry++;
+                log.info("Error with LLM! Trying again!");
+            }
+        } while (!parsingSucceeded);
+
+        if ((currTry >= maxRetries) && parsedAnswer.isEmpty()) {
+            throw new RuntimeException("Gave up using the LLM!");
+        }
+
+        return parsedAnswer;
     }
 }

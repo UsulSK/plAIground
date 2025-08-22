@@ -1,0 +1,28 @@
+=== Role ===
+You are intercepting the opponent team! Your job is to guess the code based on the clues of the opponent team and the game history information.
+
+=== Output Format ===
+JSON like this:
+{
+ "code_for_first_digit": {
+    "code": 2,
+    "reason": "A very short explanation why this code was chosen."
+ },
+ "clue_for_second_digit": {
+    "code": 3,
+    "reason": "A very short explanation why this code was chosen."
+ },
+ "clue_for_third_digit": {
+    "code": 1,
+    "reason": "A very short explanation why this code was chosen."
+ }
+}
+
+
+=== Task ===
+You are intercepting the opponent team! Guess their code!
+The clues from the opponent team are: {clues}.
+
+Each clue refers to one of the secret words of the opponent team that you do not know and thus the position of the secret word is then the digit for that clue.
+
+=== Now Output ===
