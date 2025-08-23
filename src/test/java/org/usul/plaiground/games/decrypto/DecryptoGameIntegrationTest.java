@@ -78,7 +78,7 @@ public class DecryptoGameIntegrationTest {
 
         // WHEN
 
-        this.sut.startGame();
+        this.sut.startGame(this::handleUpdateGameEvent);
 
         // THEN
 
@@ -96,8 +96,8 @@ public class DecryptoGameIntegrationTest {
 
         // WHEN
 
-        this.sut.startGame();
-        this.sut.startGame();
+        this.sut.startGame(this::handleUpdateGameEvent);
+        this.sut.startGame(this::handleUpdateGameEvent);
 
         // THEN
 
@@ -115,7 +115,7 @@ public class DecryptoGameIntegrationTest {
 
         // WHEN
 
-        this.sut.startGame();
+        this.sut.startGame(this::handleUpdateGameEvent);
         Assertions.assertFalse(gameLog.getRounds().isEmpty());
         this.sut.reset();
 
@@ -137,5 +137,9 @@ public class DecryptoGameIntegrationTest {
         GameLog gameLog = gameState.getGameLog();
         Assertions.assertTrue(gameLog.getRounds().isEmpty());
         Assertions.assertNull(gameState.getWinningTeam());
+    }
+
+    private void handleUpdateGameEvent() {
+
     }
 }

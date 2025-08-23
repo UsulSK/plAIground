@@ -26,7 +26,7 @@ public class DecryptoGame {
     @Inject
     RandomizerUtil randomizerUtil;
 
-    public void startGame() {
+    public void startGame(Runnable gameUpdateListener) {
         log.info("starting game Decrypto");
 
         this.reset();
@@ -34,8 +34,9 @@ public class DecryptoGame {
         this.initStartingGameState(gameState);
 
         log.info("Created game. ");
+        gameUpdateListener.run();
 
-        decryptoGameLogic.playGame();
+        decryptoGameLogic.playGame(gameUpdateListener);
 
         log.info("Done playing game. Log: ");
         log.info(gameState.toString());

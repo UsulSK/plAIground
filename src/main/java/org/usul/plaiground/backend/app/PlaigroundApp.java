@@ -8,7 +8,14 @@ public class PlaigroundApp {
     @Inject
     private DecryptoGame decryptoGame;
 
-    public void run() {
-        decryptoGame.startGame();
+    public DecryptoGame runDecrypto(Runnable gameUpdateListener) {
+        this.decryptoGame.startGame(gameUpdateListener);
+
+        return  this.decryptoGame;
     }
+
+    public DecryptoGame getDecryptoGame() {
+        return this.decryptoGame;
+    }
+
 }

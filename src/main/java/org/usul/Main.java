@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.usul.plaiground.backend.app.PlaigroundApp;
+import org.usul.plaiground.frontend.PlaigroundMainView;
 
 public class Main {
 
@@ -18,7 +19,7 @@ public class Main {
         PlaigroundApp app = injector.getInstance(PlaigroundApp.class);
 
         try {
-            app.run();
+            PlaigroundMainView mainView = new PlaigroundMainView(app);
         } catch (Exception e) {
             log.error("error happened: ", e);
         }

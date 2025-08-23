@@ -18,7 +18,7 @@ public class DecryptoGameLogic {
     private static final Logger log = LoggerFactory.getLogger(DecryptoGameLogic.class);
     private final static int MAX_ROUNDS = 8;
 
-    private int currRound = 0;
+    private Runnable gameUpdateListener;
 
     @Getter
     private final GameState gameState = new GameState();
@@ -32,16 +32,17 @@ public class DecryptoGameLogic {
     @Inject
     InterceptorLlm brainInterceptor;
 
-    public void playGame() {
+    public void playGame(Runnable gameUpdateListener) {
         this.brainEncryptor.setGameState(this.gameState);
         this.brainDecryptor.setGameState(this.gameState);
         this.brainInterceptor.setGameState(this.gameState);
+        this.gameUpdateListener = gameUpdateListener;
 
         GameLog gameLog = this.gameState.getGameLog();
-        for (this.currRound = 0; this.currRound < MAX_ROUNDS; this.currRound++) {
+        while (this.gameState.getRoundNumber() < MAX_ROUNDS) {
             this.gameState.getGameLog().addRound(this.gameState.getTeam1(), this.gameState.getTeam2());
 
-            log.info("\nROUND " + (currRound + 1) + "\n");
+            log.info("\nROUND " + (this.gameState.getRoundNumber() + 1) + "\n");
 
             this.playRound();
 
@@ -52,6 +53,8 @@ public class DecryptoGameLogic {
         }
 
         this.determineWinningTeam();
+        this.gameState.setGameFinished(true);
+        this.gameUpdateListener.run();
     }
 
     public void reset() {
@@ -60,8 +63,8 @@ public class DecryptoGameLogic {
 
     private void determineWinningTeam() {
         Round lastRound = this.gameState.getGameLog().getRounds().getLast();
-        int pointsTeam1 = lastRound.getTeam1InterceptTokens() - lastRound.getTeam1MissCommTokens();
-        int pointsTeam2 = lastRound.getTeam2InterceptTokens() - lastRound.getTeam2MissCommTokens();
+        int pointsTeam1 = this.gameState.getTotalPointsForTeam(this.gameState.getTeam1());
+        int pointsTeam2 = this.gameState.getTotalPointsForTeam(this.gameState.getTeam2());
 
         if (pointsTeam1 == pointsTeam2) {
             return;
@@ -76,15 +79,17 @@ public class DecryptoGameLogic {
         Team startingTeam = getStartingTeam();
         Team secondTeam = this.gameState.getOtherTeam(startingTeam);
 
-        Round round = this.gameState.getGameLog().getRounds().get(this.currRound);
+        Round round = this.gameState.getGameLog().getRounds().get(this.gameState.getRoundNumber());
         round.setStartingTeam(startingTeam);
 
         playRoundForTeam(startingTeam, secondTeam);
+        this.gameUpdateListener.run();
         playRoundForTeam(secondTeam, startingTeam);
+        this.gameUpdateListener.run();
     }
 
     private Team getStartingTeam() {
-        if (this.currRound % 2 == 0) {
+        if (this.gameState.getRoundNumber() % 2 == 0) {
             return this.gameState.getTeam1();
         }
         return this.gameState.getTeam2();
@@ -95,9 +100,9 @@ public class DecryptoGameLogic {
         Player currDecryptor = transmittingTeam.getOtherPlayer(currEncryptor);
         Player currInterceptor = interceptingTeam.getPlayers().getFirst();
 
-        Round round = this.gameState.getGameLog().getRounds().get(this.currRound);
+        Round round = this.gameState.getGameLog().getRounds().get(this.gameState.getRoundNumber());
         TeamRound teamRound = new TeamRound();
-        round.setRoundNumber(this.currRound);
+        round.setRoundNumber(this.gameState.getRoundNumber());
         round.getTeamInfo().put(transmittingTeam.getName(), teamRound);
 
         teamRound.setDecryptor(currDecryptor);
@@ -107,13 +112,13 @@ public class DecryptoGameLogic {
         teamRound.getCode().addAll(code);
 
         log.info("\n" + transmittingTeam.getName() + " ENCRYPT secret words " + transmittingTeam.getKeywords() + " and code " + code);
-        List<String> encryptedCodes = brainEncryptor.encrypt(currEncryptor, code, this.currRound);
+        List<String> encryptedCodes = brainEncryptor.encrypt(currEncryptor, code, this.gameState.getRoundNumber());
         log.info("Encrypted: " + encryptedCodes + "\n");
         teamRound.getEncryptedCode().addAll(encryptedCodes);
 
         if (round.getRoundNumber() > 0) {
             log.info("\n" + interceptingTeam.getName() + " INTERCEPT");
-            List<Integer> guessedCodes = brainInterceptor.intercept(currInterceptor, encryptedCodes, this.currRound);
+            List<Integer> guessedCodes = brainInterceptor.intercept(currInterceptor, encryptedCodes, this.gameState.getRoundNumber());
             log.info("Intercept guess: " + guessedCodes + "\n");
             teamRound.getGuessedCodeByOtherTeam().addAll(guessedCodes);
 
@@ -124,7 +129,7 @@ public class DecryptoGameLogic {
         }
 
         log.info("\n" + transmittingTeam.getName() + " DECRYPT");
-        List<Integer> decryptedCodes = brainDecryptor.decrypt(currDecryptor, encryptedCodes, this.currRound);
+        List<Integer> decryptedCodes = brainDecryptor.decrypt(currDecryptor, encryptedCodes, this.gameState.getRoundNumber());
         log.info("Guesser (decryptor) guess: " + decryptedCodes + "\n");
         teamRound.getGuessedCodeByOwnTeam().addAll(decryptedCodes);
 
@@ -135,7 +140,7 @@ public class DecryptoGameLogic {
     }
 
     private Player getCurrentEncryptor(Team team) {
-        if (this.currRound % 2 == 0) {
+        if (this.gameState.getRoundNumber() % 2 == 0) {
             return team.getPlayers().getFirst();
         }
         return team.getPlayers().getLast();

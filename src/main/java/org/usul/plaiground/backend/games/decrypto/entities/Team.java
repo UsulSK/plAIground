@@ -20,10 +20,6 @@ public class Team extends ParentEntity {
 
     private List<String> keywords = new ArrayList<>();
 
-    public Team(String name) {
-        this.name = name;
-    }
-
     public Player getOtherPlayer(Player player) {
         if (this.players.getFirst() == player) {
             return this.players.getLast();
