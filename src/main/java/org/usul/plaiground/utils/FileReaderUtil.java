@@ -5,13 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FileReader {
+public class FileReaderUtil {
     public List<String> readEntriesForNewlineSeparatedFile(String resourceName) {
-        List<String> parsedLines = new ArrayList<>();
+        List<String> parsedLines = null;
 
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourceName)) {
             if (inputStream == null) {

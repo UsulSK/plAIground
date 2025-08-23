@@ -1,29 +1,26 @@
-package org.usul.plaiground.games.decrypto.entities;
+package org.usul.plaiground.backend.games.decrypto.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
-public class GameWorld extends ParentEntity {
+public class GameState extends ParentEntity {
 
     private Team team1;
     private Team team2;
 
-    private Player judge;
-
-    private GameLog gameLog = new GameLog();
+    private final GameLog gameLog = new GameLog();
 
     @JsonIgnore
     private Team winningTeam = null;
 
-    public GameWorld() {
-        this.team1 = new Team("Replicants");
-        this.team2 = new Team("Hosts");
+    public void reset() {
+        this.team1 = new Team("Tyrell");
+        this.team2 = new Team("Delos");
+        this.gameLog.reset();
     }
 
     public Team getOtherTeam(Team team) {

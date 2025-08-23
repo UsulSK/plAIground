@@ -1,4 +1,4 @@
-package org.usul.plaiground.games.decrypto.entities;
+package org.usul.plaiground.backend.games.decrypto.entities;
 
 import lombok.Getter;
 import lombok.Setter;

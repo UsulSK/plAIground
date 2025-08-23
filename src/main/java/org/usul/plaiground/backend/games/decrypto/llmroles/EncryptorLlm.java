@@ -1,10 +1,13 @@
-package org.usul.plaiground.games.decrypto.llmroles;
+package org.usul.plaiground.backend.games.decrypto.llmroles;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
-import org.usul.plaiground.games.decrypto.entities.*;
-import org.usul.plaiground.utils.FileReader;
+import org.usul.plaiground.backend.games.decrypto.entities.Player;
+import org.usul.plaiground.backend.games.decrypto.entities.Round;
+import org.usul.plaiground.backend.games.decrypto.entities.Team;
+import org.usul.plaiground.backend.games.decrypto.entities.TeamRound;
+import org.usul.plaiground.utils.FileReaderUtil;
 import org.usul.plaiground.utils.StringParser;
 
 import java.util.ArrayList;
@@ -13,7 +16,7 @@ import java.util.List;
 public class EncryptorLlm extends DecryptoLlmParent {
 
     @Inject
-    private FileReader fileReader;
+    private FileReaderUtil fileReaderUtil;
 
     public List<String> encrypt(Player player, List<Integer> code, int roundNumber) {
         String prompt = this.createPrompt(player, code, roundNumber);
@@ -46,8 +49,8 @@ public class EncryptorLlm extends DecryptoLlmParent {
     }
 
     private String createPrompt(Player player, List<Integer> code, int roundNumber) {
-        String promptTemplateGeneral = this.fileReader.readTextFile("decrypto/prompt_general");
-        String promptTemplateEncrypt = this.fileReader.readTextFile("decrypto/prompt_encryptor");
+        String promptTemplateGeneral = this.fileReaderUtil.readTextFile("decrypto/prompt_general");
+        String promptTemplateEncrypt = this.fileReaderUtil.readTextFile("decrypto/prompt_encryptor");
         String finalPrompt = promptTemplateGeneral + "\n" + promptTemplateEncrypt;
 
         finalPrompt = this.getPromptForGeneralTemplate(finalPrompt, player, roundNumber);
@@ -59,11 +62,11 @@ public class EncryptorLlm extends DecryptoLlmParent {
     }
 
     private String getAllUsedClues(Player player) {
-        Team teamOfPlayer = this.gameWorld.getTeamOfPlayer(player);
+        Team teamOfPlayer = this.gameState.getTeamOfPlayer(player);
         List<String> usedCodesForDigit1 = new ArrayList<>();
         List<String> usedCodesForDigit2 = new ArrayList<>();
         List<String> usedCodesForDigit3 = new ArrayList<>();
-        for (Round round : this.gameWorld.getGameLog().getRounds()) {
+        for (Round round : this.gameState.getGameLog().getRounds()) {
             TeamRound teamRound = round.getTeamInfo().get(teamOfPlayer.getName());
             if (teamRound == null) {
                 break;

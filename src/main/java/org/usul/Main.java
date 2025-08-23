@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.usul.plaiground.app.PlaigroundApp;
+import org.usul.plaiground.backend.app.PlaigroundApp;
 
 public class Main {
 

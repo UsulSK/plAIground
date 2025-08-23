@@ -1,4 +1,4 @@
-package org.usul.plaiground.games.decrypto.entities;
+package org.usul.plaiground.backend.games.decrypto.entities;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +10,10 @@ import java.util.List;
 @Setter
 public class GameLog extends ParentEntity {
     private List<Round> rounds = new ArrayList<>();
+
+    public void reset() {
+        this.rounds.clear();
+    }
 
     public void addRound(Team team1, Team team2) {
         Round newRound = new Round();

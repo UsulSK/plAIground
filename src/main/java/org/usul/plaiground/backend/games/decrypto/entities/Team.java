@@ -1,4 +1,4 @@
-package org.usul.plaiground.games.decrypto.entities;
+package org.usul.plaiground.backend.games.decrypto.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

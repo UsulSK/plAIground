@@ -1,25 +1,27 @@
-package org.usul.plaiground.games.decrypto;
+package org.usul.plaiground.backend.games.decrypto;
 
 import com.google.inject.Inject;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.usul.plaiground.games.decrypto.entities.*;
-import org.usul.plaiground.games.decrypto.llmroles.DecryptorLlm;
-import org.usul.plaiground.games.decrypto.llmroles.EncryptorLlm;
-import org.usul.plaiground.games.decrypto.llmroles.InterceptorLlm;
+import org.usul.plaiground.backend.games.decrypto.entities.*;
+import org.usul.plaiground.backend.games.decrypto.llmroles.DecryptorLlm;
+import org.usul.plaiground.backend.games.decrypto.llmroles.EncryptorLlm;
+import org.usul.plaiground.backend.games.decrypto.llmroles.InterceptorLlm;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class GameMaster {
+public class DecryptoGameLogic {
 
-    private static final Logger log = LoggerFactory.getLogger(GameMaster.class);
+    private static final Logger log = LoggerFactory.getLogger(DecryptoGameLogic.class);
     private final static int MAX_ROUNDS = 8;
 
     private int currRound = 0;
 
-    private GameWorld gameWorld = null;
+    @Getter
+    private final GameState gameState = new GameState();
 
     @Inject
     EncryptorLlm brainEncryptor;
@@ -31,9 +33,13 @@ public class GameMaster {
     InterceptorLlm brainInterceptor;
 
     public void playGame() {
-        GameLog gameLog = this.gameWorld.getGameLog();
+        this.brainEncryptor.setGameState(this.gameState);
+        this.brainDecryptor.setGameState(this.gameState);
+        this.brainInterceptor.setGameState(this.gameState);
+
+        GameLog gameLog = this.gameState.getGameLog();
         for (this.currRound = 0; this.currRound < MAX_ROUNDS; this.currRound++) {
-            this.gameWorld.getGameLog().addRound(this.gameWorld.getTeam1(), this.gameWorld.getTeam2());
+            this.gameState.getGameLog().addRound(this.gameState.getTeam1(), this.gameState.getTeam2());
 
             log.info("\nROUND " + (currRound + 1) + "\n");
 
@@ -48,32 +54,29 @@ public class GameMaster {
         this.determineWinningTeam();
     }
 
-    public void setGameWorld(GameWorld gameWorld) {
-        this.gameWorld = gameWorld;
-        this.brainEncryptor.setGameWorld(gameWorld);
-        this.brainDecryptor.setGameWorld(gameWorld);
-        this.brainInterceptor.setGameWorld(gameWorld);
+    public void reset() {
+        this.gameState.reset();
     }
 
     private void determineWinningTeam() {
-        Round lastRound = this.gameWorld.getGameLog().getRounds().getLast();
+        Round lastRound = this.gameState.getGameLog().getRounds().getLast();
         int pointsTeam1 = lastRound.getTeam1InterceptTokens() - lastRound.getTeam1MissCommTokens();
         int pointsTeam2 = lastRound.getTeam2InterceptTokens() - lastRound.getTeam2MissCommTokens();
 
         if (pointsTeam1 == pointsTeam2) {
             return;
         } else if (pointsTeam1 > pointsTeam2) {
-            this.gameWorld.setWinningTeam(this.gameWorld.getTeam1());
+            this.gameState.setWinningTeam(this.gameState.getTeam1());
         } else {
-            this.gameWorld.setWinningTeam(this.gameWorld.getTeam2());
+            this.gameState.setWinningTeam(this.gameState.getTeam2());
         }
     }
 
     private void playRound() {
         Team startingTeam = getStartingTeam();
-        Team secondTeam = this.gameWorld.getOtherTeam(startingTeam);
+        Team secondTeam = this.gameState.getOtherTeam(startingTeam);
 
-        Round round = this.gameWorld.getGameLog().getRounds().get(this.currRound);
+        Round round = this.gameState.getGameLog().getRounds().get(this.currRound);
         round.setStartingTeam(startingTeam);
 
         playRoundForTeam(startingTeam, secondTeam);
@@ -82,9 +85,9 @@ public class GameMaster {
 
     private Team getStartingTeam() {
         if (this.currRound % 2 == 0) {
-            return this.gameWorld.getTeam1();
+            return this.gameState.getTeam1();
         }
-        return this.gameWorld.getTeam2();
+        return this.gameState.getTeam2();
     }
 
     private void playRoundForTeam(Team transmittingTeam, Team interceptingTeam) {
@@ -92,7 +95,7 @@ public class GameMaster {
         Player currDecryptor = transmittingTeam.getOtherPlayer(currEncryptor);
         Player currInterceptor = interceptingTeam.getPlayers().getFirst();
 
-        Round round = this.gameWorld.getGameLog().getRounds().get(this.currRound);
+        Round round = this.gameState.getGameLog().getRounds().get(this.currRound);
         TeamRound teamRound = new TeamRound();
         round.setRoundNumber(this.currRound);
         round.getTeamInfo().put(transmittingTeam.getName(), teamRound);

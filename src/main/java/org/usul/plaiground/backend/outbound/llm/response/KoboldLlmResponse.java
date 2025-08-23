@@ -1,4 +1,4 @@
-package org.usul.plaiground.outbound.llm.response;
+package org.usul.plaiground.backend.outbound.llm.response;
 
 import lombok.Getter;
 import lombok.Setter;

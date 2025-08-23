@@ -1,10 +1,11 @@
-package org.usul.plaiground.games.decrypto.llmroles;
+package org.usul.plaiground.backend.games.decrypto.llmroles;
 
 import com.google.inject.Inject;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.usul.plaiground.games.decrypto.entities.*;
-import org.usul.plaiground.outbound.llm.KoboldLlmConnector;
+import org.usul.plaiground.backend.games.decrypto.entities.*;
+import org.usul.plaiground.backend.outbound.llm.KoboldLlmConnector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,9 @@ import java.util.stream.Collectors;
 public class DecryptoLlmParent {
 
     protected static final Logger log = LoggerFactory.getLogger(DecryptoLlmParent.class);
-    protected GameWorld gameWorld;
+
+    @Setter
+    protected GameState gameState;
 
     @Inject
     private KoboldLlmConnector llm;
@@ -26,7 +29,7 @@ public class DecryptoLlmParent {
     }
 
     protected String getSecretWordsLlmSerialization(Player player) {
-        List<String> secretWords = this.gameWorld.getTeamOfPlayer(player).getKeywords();
+        List<String> secretWords = this.gameState.getTeamOfPlayer(player).getKeywords();
         StringBuilder swSb = new StringBuilder();
 
         int counter = 1;
@@ -44,7 +47,7 @@ public class DecryptoLlmParent {
     private String getGameHistoryLlmSerialization(Player player, int roundNumber) {
         StringBuilder gameHistory = new StringBuilder("\n");
 
-        for (Round round : this.gameWorld.getGameLog().getRounds()) {
+        for (Round round : this.gameState.getGameLog().getRounds()) {
             gameHistory.append("Round ");
             gameHistory.append(round.getRoundNumber() + 1);
             if (round.getRoundNumber() == roundNumber) {
@@ -52,8 +55,8 @@ public class DecryptoLlmParent {
             }
             gameHistory.append(":\n\n");
 
-            String team1Log = this.getTeamRoundLlmSerialization(player, this.gameWorld.getTeam1(), round);
-            String team2Log = this.getTeamRoundLlmSerialization(player, this.gameWorld.getTeam2(), round);
+            String team1Log = this.getTeamRoundLlmSerialization(player, this.gameState.getTeam1(), round);
+            String team2Log = this.getTeamRoundLlmSerialization(player, this.gameState.getTeam2(), round);
 
             if (team1Log.isEmpty() && team2Log.isEmpty()) {
                 gameHistory.append("-");
@@ -77,7 +80,7 @@ public class DecryptoLlmParent {
 
     private String getTeamRoundLlmSerialization(Player player, Team team, Round round) {
         TeamRound teamRound = round.getTeamInfo().get(team.getName());
-        Team otherTeam = this.gameWorld.getOtherTeam(team);
+        Team otherTeam = this.gameState.getOtherTeam(team);
 
         if (teamRound == null) {
             return "";
@@ -101,7 +104,7 @@ public class DecryptoLlmParent {
             teamroundText.append(" guessed ");
             teamroundText.append(teamRound.getGuessedCodeByOtherTeam().stream().map(String::valueOf).reduce("", String::concat));
             teamroundText.append(" for the other teams code.");
-            if (teamRound.getCode().equals(teamRound.getGuessedCodeByOtherTeam()) && (this.gameWorld.getTeamOfPlayer(player) == team)) {
+            if (teamRound.getCode().equals(teamRound.getGuessedCodeByOtherTeam()) && (this.gameState.getTeamOfPlayer(player) == team)) {
                 teamroundText.append(" This guess was CORRECT! The clues here have been maybe too obvious.");
             }
             teamroundText.append("\n");
@@ -119,10 +122,6 @@ public class DecryptoLlmParent {
         return teamroundText.toString();
     }
 
-    public void setGameWorld(GameWorld gameWorld) {
-        this.gameWorld = gameWorld;
-    }
-
     private String getCluesText(List<String> clues) {
         return clues.stream().map(s -> "[" + s + "]").reduce((a, b) -> a + " " + b).orElse("");
     }
@@ -130,7 +129,7 @@ public class DecryptoLlmParent {
     private String getTeamText(Player player, Team team) {
         String teamText = "";
 
-        if (this.gameWorld.getTeamOfPlayer(player) == team) {
+        if (this.gameState.getTeamOfPlayer(player) == team) {
             teamText = teamText + "Your team";
         } else {
             teamText = teamText + "Oponent team";
