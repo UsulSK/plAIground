@@ -1,5 +1,7 @@
 target/
 
+log.txt
+
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml

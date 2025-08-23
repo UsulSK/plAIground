@@ -6,7 +6,17 @@
         </encoder>
     </appender>
 
+    <!-- File appender: overwrites log.txt in the current working directory -->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>log.txt</file>
+        <append>false</append>
+        <encoder>
+            <pattern>[%date{HH:mm:ss}] [%level] %msg%n</pattern>
+        </encoder>
+    </appender>
+
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
     </root>
 </configuration>
