@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.usul.plaiground.backend.outbound.llm.request.RequestBodyBuilderUtil;
 import org.usul.plaiground.backend.outbound.llm.response.KoboldLlmResponse;
 
 public class KoboldLlmConnector {
@@ -22,11 +23,7 @@ public class KoboldLlmConnector {
         Random random = new Random(System.currentTimeMillis());
         int seed = random.nextInt();
 
-        JSONObject payload = new JSONObject();
-        payload.put("prompt", msg);
-        payload.put("max_length", 400);
-        payload.put("temperature", 0.7);
-        payload.put("seed", seed);  // random seed for different results each call
+        JSONObject payload = RequestBodyBuilderUtil.buildJsonBody(msg, 400, 0.7F, seed);
 
         HttpResponse<String> response = null;
         try {

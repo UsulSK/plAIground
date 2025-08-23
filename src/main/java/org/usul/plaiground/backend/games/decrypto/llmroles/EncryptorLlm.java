@@ -15,9 +15,6 @@ import java.util.List;
 
 public class EncryptorLlm extends DecryptoLlmParent {
 
-    @Inject
-    private FileReaderUtil fileReaderUtil;
-
     public List<String> encrypt(Player player, List<Integer> code, int roundNumber) {
         String prompt = this.createPrompt(player, code, roundNumber);
 
@@ -51,41 +48,9 @@ public class EncryptorLlm extends DecryptoLlmParent {
     private String createPrompt(Player player, List<Integer> code, int roundNumber) {
         String promptTemplateGeneral = this.fileReaderUtil.readTextFile("decrypto/prompt_general");
         String promptTemplateEncrypt = this.fileReaderUtil.readTextFile("decrypto/prompt_encryptor");
-        String finalPrompt = promptTemplateGeneral + "\n" + promptTemplateEncrypt;
-
-        finalPrompt = this.getPromptForGeneralTemplate(finalPrompt, player, roundNumber);
-        finalPrompt = finalPrompt.replace("{secret_words}", this.getSecretWordsLlmSerialization(player));
-        finalPrompt = finalPrompt.replace("{code}", this.getCodeText(code));
-        finalPrompt = finalPrompt.replace("{used_clues}", this.getAllUsedClues(player));
+        String finalPrompt = LlmPromptCreator.createPromptForEncrypt(gameState, promptTemplateGeneral,
+                promptTemplateEncrypt, player, code, roundNumber);
 
         return finalPrompt;
-    }
-
-    private String getAllUsedClues(Player player) {
-        Team teamOfPlayer = this.gameState.getTeamOfPlayer(player);
-        List<String> usedCodesForDigit1 = new ArrayList<>();
-        List<String> usedCodesForDigit2 = new ArrayList<>();
-        List<String> usedCodesForDigit3 = new ArrayList<>();
-        for (Round round : this.gameState.getGameLog().getRounds()) {
-            TeamRound teamRound = round.getTeamInfo().get(teamOfPlayer.getName());
-            if (teamRound == null) {
-                break;
-            }
-            List<String> encCode = teamRound.getEncryptedCode();
-            if (encCode.isEmpty()) {
-                continue;
-            }
-            usedCodesForDigit1.add(encCode.get(0));
-            usedCodesForDigit2.add(encCode.get(1));
-            usedCodesForDigit3.add(encCode.get(2));
-        }
-
-        if( usedCodesForDigit1.isEmpty() ) {
-            return "no clues have been given yet";
-        }
-
-        return "for first digit: " + usedCodesForDigit1.stream().map(s -> "[" + s + "]").reduce((a, b) -> a + " " + b).get()
-                + "; for second digit: " + usedCodesForDigit2.stream().map(s -> "[" + s + "]").reduce((a, b) -> a + " " + b).get()
-                + "; for third digit: " + usedCodesForDigit3.stream().map(s -> "[" + s + "]").reduce((a, b) -> a + " " + b).get();
     }
 }

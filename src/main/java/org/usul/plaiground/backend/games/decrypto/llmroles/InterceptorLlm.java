@@ -12,9 +12,6 @@ import java.util.List;
 
 public class InterceptorLlm extends DecryptoLlmParent {
 
-    @Inject
-    private FileReaderUtil fileReaderUtil;
-
     public List<Integer> intercept(Player player, List<String> encryptedCode, int roundNumber) {
         String prompt = this.createPrompt(player, encryptedCode, roundNumber);
 
@@ -48,9 +45,8 @@ public class InterceptorLlm extends DecryptoLlmParent {
     private String createPrompt(Player player, List<String> clues, int roundNumber) {
         String promptTemplateGeneral = this.fileReaderUtil.readTextFile("decrypto/prompt_general");
         String promptTemplateIntercept = this.fileReaderUtil.readTextFile("decrypto/prompt_interceptor");
-        String finalPrompt = promptTemplateGeneral + "\n" + promptTemplateIntercept;
-        finalPrompt = this.getPromptForGeneralTemplate(finalPrompt, player, roundNumber);
-        finalPrompt = finalPrompt.replace("{clues}", this.getCluesLlmSerialization(clues));
+        String finalPrompt = LlmPromptCreator.createPromptForIntercept(gameState, promptTemplateGeneral,
+                promptTemplateIntercept, player, clues, roundNumber);
 
         return finalPrompt;
     }

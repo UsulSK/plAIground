@@ -12,9 +12,6 @@ import java.util.List;
 
 public class DecryptorLlm extends DecryptoLlmParent {
 
-    @Inject
-    private FileReaderUtil fileReaderUtil;
-
     public List<Integer> decrypt(Player player, List<String> encryptedCode, int roundNumber) {
         String prompt = this.createPrompt(player, encryptedCode, roundNumber);
 
@@ -48,10 +45,8 @@ public class DecryptorLlm extends DecryptoLlmParent {
     private String createPrompt(Player player, List<String> clues, int roundNumber) {
         String promptTemplateGeneral = this.fileReaderUtil.readTextFile("decrypto/prompt_general");
         String promptTemplateDecrypt = this.fileReaderUtil.readTextFile("decrypto/prompt_decryptor");
-        String finalPrompt = promptTemplateGeneral + "\n" + promptTemplateDecrypt;
-        finalPrompt = this.getPromptForGeneralTemplate(finalPrompt, player, roundNumber);
-        finalPrompt = finalPrompt.replace("{secret_words}", this.getSecretWordsLlmSerialization(player));
-        finalPrompt = finalPrompt.replace("{clues}", this.getCluesLlmSerialization(clues));
+        String finalPrompt = LlmPromptCreator.createPromptForDecrypt(gameState, promptTemplateGeneral,
+                promptTemplateDecrypt, player, clues, roundNumber);
 
         return finalPrompt;
     }
