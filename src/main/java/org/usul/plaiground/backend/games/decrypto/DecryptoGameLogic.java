@@ -79,7 +79,7 @@ public class DecryptoGameLogic {
         Team startingTeam = getStartingTeam();
         Team secondTeam = this.gameState.getOtherTeam(startingTeam);
 
-        Round round = this.gameState.getGameLog().getRounds().get(this.gameState.getRoundNumber());
+        Round round = this.gameState.getGameLog().getRounds().getLast();
         round.setStartingTeam(startingTeam);
 
         playRoundForTeam(startingTeam, secondTeam);
@@ -100,13 +100,10 @@ public class DecryptoGameLogic {
         Player currDecryptor = transmittingTeam.getOtherPlayer(currEncryptor);
         Player currInterceptor = interceptingTeam.getPlayers().getFirst();
 
-        Round round = this.gameState.getGameLog().getRounds().get(this.gameState.getRoundNumber());
+        Round round = this.gameState.getGameLog().getRounds().getLast();
         TeamRound teamRound = new TeamRound();
         round.setRoundNumber(this.gameState.getRoundNumber());
         round.getTeamInfo().put(transmittingTeam.getName(), teamRound);
-
-        teamRound.setDecryptor(currDecryptor);
-        teamRound.setEncryptor(currEncryptor);
 
         List<Integer> code = this.generateCode();
         teamRound.getCode().addAll(code);
