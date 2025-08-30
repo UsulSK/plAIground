@@ -115,6 +115,7 @@ public class DecryptoGameLogic {
         teamRound.getEncryptedCode().addAll(encryptedCodes);
         this.gameUpdateListener.run();
 
+        boolean interceptingSuccessful = false;
         if (round.getRoundNumber() > 0) {
             log.info(interceptingTeam.getName() + " INTERCEPT");
             List<Integer> guessedCodes = brainInterceptor.intercept(currInterceptor, encryptedCodes, this.gameState.getRoundNumber());
@@ -122,20 +123,23 @@ public class DecryptoGameLogic {
             teamRound.getGuessedCodeByOtherTeam().addAll(guessedCodes);
 
             if (guessedCodes.equals(code)) {
+                interceptingSuccessful = true;
                 round.addInterceptionTokensToken(interceptingTeam);
                 log.info("INTERCEPTION_SUCCEEDED FOR TEAM " + interceptingTeam.getName() + "! \n");
             }
         }
         this.gameUpdateListener.run();
 
-        log.info(transmittingTeam.getName() + " DECRYPT");
-        List<Integer> decryptedCodes = brainDecryptor.decrypt(currDecryptor, encryptedCodes, this.gameState.getRoundNumber());
-        log.info("guesser_guess: " + decryptedCodes + "\n");
-        teamRound.getGuessedCodeByOwnTeam().addAll(decryptedCodes);
+        if (!interceptingSuccessful) {
+            log.info(transmittingTeam.getName() + " DECRYPT");
+            List<Integer> decryptedCodes = brainDecryptor.decrypt(currDecryptor, encryptedCodes, this.gameState.getRoundNumber());
+            log.info("guesser_guess: " + decryptedCodes + "\n");
+            teamRound.getGuessedCodeByOwnTeam().addAll(decryptedCodes);
 
-        if (!decryptedCodes.equals(code)) {
-            round.addMiscommunicationToken(transmittingTeam);
-            log.info("TEAM_GUESSED_OWN_CODE_WRONG: " + transmittingTeam.getName() + "! \n");
+            if (!decryptedCodes.equals(code)) {
+                round.addMiscommunicationToken(transmittingTeam);
+                log.info("TEAM_GUESSED_OWN_CODE_WRONG: " + transmittingTeam.getName() + "! \n");
+            }
         }
     }
 

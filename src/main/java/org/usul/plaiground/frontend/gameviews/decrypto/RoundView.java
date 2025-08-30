@@ -99,20 +99,32 @@ public class RoundView extends JPanel {
         sb.append(code);
         sb.append("<br>");
 
-        sb.append("Clues: ");
-        String clues = teamRound.getEncryptedCode().stream().map(s -> "<b>[" + s + "]</b>").collect(Collectors.joining(" "));
-        sb.append(clues);
-        sb.append("<br>");
+        if (!teamRound.getEncryptedCode().isEmpty()) {
+            sb.append("Clues: ");
+            String clues = teamRound.getEncryptedCode().stream().map(s -> "<b>[" + s + "]</b>").collect(Collectors.joining(" "));
+            sb.append(clues);
+            sb.append("<br>");
+        }
 
-        sb.append("Intercept Guess: ");
-        String intercept = teamRound.getGuessedCodeByOtherTeam().stream().map(s -> "<b>" + s + "</b>").collect(Collectors.joining(" "));
-        sb.append(intercept);
-        sb.append("<br>");
+        if (!teamRound.getGuessedCodeByOtherTeam().isEmpty()) {
+            sb.append("Intercept Guess: ");
+            String intercept = teamRound.getGuessedCodeByOtherTeam().stream().map(s -> "<b>" + s + "</b>").collect(Collectors.joining(" "));
+            sb.append(intercept);
+            if (teamRound.getGuessedCodeByOtherTeam().equals(teamRound.getCode())) {
+                sb.append(" <b>=> SUCCESS!</b>");
+            }
+            sb.append("<br>");
+        }
 
-        sb.append("Guessed: ");
-        String guessed = teamRound.getGuessedCodeByOwnTeam().stream().map(s -> "<b>" + s + "</b>").collect(Collectors.joining(" "));
-        sb.append(guessed);
-        sb.append("<br>");
+        if (!teamRound.getGuessedCodeByOwnTeam().isEmpty()) {
+            sb.append("Guessed: ");
+            String guessed = teamRound.getGuessedCodeByOwnTeam().stream().map(s -> "<b>" + s + "</b>").collect(Collectors.joining(" "));
+            sb.append(guessed);
+            if (!teamRound.getGuessedCodeByOwnTeam().equals(teamRound.getCode())) {
+                sb.append(" <b>=> MISSCOMMUNICATION!</b>");
+            }
+            sb.append("<br>");
+        }
     }
 
 }

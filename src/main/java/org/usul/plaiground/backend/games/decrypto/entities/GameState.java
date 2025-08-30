@@ -21,7 +21,7 @@ public class GameState extends ParentEntity {
     public void reset() {
         this.team1.setName("Tyrell");
         this.team2.setName("Delos");
-        boolean isGameFinished = false;
+        this.isGameFinished = false;
 
         this.gameLog.reset();
     }

@@ -46,6 +46,7 @@ public class KoboldLlmConnector {
             throw new RuntimeException(e);
         }
         String responseText = response.body();
+        log.info("original_llm_answer: " + responseText);
 
         ObjectMapper mapper = new ObjectMapper();
         KoboldLlmResponse parsedReponse = null;
@@ -53,7 +54,6 @@ public class KoboldLlmConnector {
             parsedReponse = mapper.readValue(responseText, KoboldLlmResponse.class);
         } catch (Exception e) {
             log.error("llm_json_parse_error!", e);
-            log.info("original_llm_answer: " + responseText);
             throw new RuntimeException(e);
         }
 
