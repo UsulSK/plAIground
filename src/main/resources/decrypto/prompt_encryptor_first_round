@@ -9,11 +9,8 @@ Your team has a secret key (only known to your team) consisting of four words: "
 Each of the three digits of the code refer to the word of the secret key of the position.
 So your first clue for the first digit {SECRET_CODE_1} should refer to "{REFERRING_SECRET_1}". Your second clue for the second digit {SECRET_CODE_2} should refer to "{REFERRING_SECRET_2}". And your third clue for the third digit {SECRET_CODE_3} should refer to "{REFERRING_SECRET_3}".
 
-The opponent team already knows the following clues for the secret words (without knowing the secret word) from past rounds:
-{CLUE_HISTORY}
-Try to give clues for "{REFERRING_SECRET_1}", "{REFERRING_SECRET_2}" and "{REFERRING_SECRET_3}" so vague that the opponent team can not group them together with the clues they already know for a secret word. So ideally, for the opponent team your clues should have no obvious connection to the clues that they already know.
+Try to give clues for "{REFERRING_SECRET_1}", "{REFERRING_SECRET_2}" and "{REFERRING_SECRET_3}" so vague that the opponent team can not deduce the words of the secret key from them.
 So your clues should ideally not be similar to the clues of the previous rounds that the opponent team already knows.
-Also try to give clues for "{REFERRING_SECRET_1}", "{REFERRING_SECRET_2}" and "{REFERRING_SECRET_3}" so vague that the opponent team can not deduce the words of the secret key from them.
 But give your clues well enough that your team mate, who knows the secret key, can know to which of the four words in the secret key your clues refer to.
 
 === Output Format ===
@@ -21,18 +18,15 @@ Only answer with one JSON followed by "[END]" like this:
 {
  "clue_for_first_digit_of_code": {
   "clue": "the clue",
-  "reason_teammate": "A very short explanation why this clue helps your teammate.",
-  "reason_opponent": "A very short explanation why this clue is hard for the opponent team to guess{OPPONENT_REASON_1}"
+  "reason_teammate": "A very short explanation why this clue helps your teammate."
  },
  "clue_for_second_digit_of_code": {
   "clue": "the clue",
-  "reason_teammate": "A very short explanation why this clue helps your teammate.",
-  "reason_opponent": "A very short explanation why this clue is hard for the opponent team to guess{OPPONENT_REASON_2}"
+  "reason_teammate": "A very short explanation why this clue helps your teammate."
  },
  "clue_for_third_digit_of_code": {
   "clue": "the clue",
-  "reason_teammate": "A very short explanation why this clue helps your teammate.",
-  "reason_opponent": "A very short explanation why this clue is hard for the opponent team to guess{OPPONENT_REASON_3}"
+  "reason_teammate": "A very short explanation why this clue helps your teammate."
  }
 }
 [END]

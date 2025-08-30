@@ -2,13 +2,13 @@ package org.usul.plaiground.backend.games.decrypto.llmroles;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
 import org.usul.plaiground.backend.games.decrypto.entities.Player;
-import org.usul.plaiground.utils.FileReaderUtil;
+import org.usul.plaiground.backend.games.decrypto.entities.Team;
 import org.usul.plaiground.utils.StringParser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DecryptorLlm extends DecryptoLlmParent {
 
@@ -16,8 +16,8 @@ public class DecryptorLlm extends DecryptoLlmParent {
         String prompt = this.createPrompt(player, encryptedCode, roundNumber);
 
         if (System.getenv("NO_LLM_DEBUG_MODE") != null) {
-            // log.info(prompt);
-            log.info("Running in DEBUG MODE WITH NO LLM!");
+            log.info("no_llm_mode");
+            log.info(prompt);
             return new ArrayList<>(List.of(2, 1, 3));
         }
 
@@ -32,10 +32,11 @@ public class DecryptorLlm extends DecryptoLlmParent {
             String jsonPartOfAnswer = StringParser.parseJson(answer);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(jsonPartOfAnswer);
-            guessedCode.add(node.get("code_for_first_digit").get("code").asInt());
-            guessedCode.add(node.get("clue_for_second_digit").get("code").asInt());
-            guessedCode.add(node.get("clue_for_third_digit").get("code").asInt());
+            guessedCode.add(node.get("guess_for_first_clue").get("guessed_position").asInt());
+            guessedCode.add(node.get("guess_for_second_clue").get("guessed_position").asInt());
+            guessedCode.add(node.get("guess_for_third_clue").get("guessed_position").asInt());
         } catch (Exception e) {
+            log.error("decrypt_parse_answer_error", e);
             throw new RuntimeException(e);
         }
 
@@ -43,11 +44,44 @@ public class DecryptorLlm extends DecryptoLlmParent {
     }
 
     private String createPrompt(Player player, List<String> clues, int roundNumber) {
-        String promptTemplateGeneral = this.fileReaderUtil.readTextFile("decrypto/prompt_general");
-        String promptTemplateDecrypt = this.fileReaderUtil.readTextFile("decrypto/prompt_decryptor");
-        String finalPrompt = LlmPromptCreator.createPromptForDecrypt(gameState, promptTemplateGeneral,
-                promptTemplateDecrypt, player, clues, roundNumber);
+        String finalPrompt = this.fileReaderUtil.readTextFile("decrypto/prompt_decryptor");
+
+        finalPrompt = this.replaceSecretWords(finalPrompt, player);
+        finalPrompt = this.replaceClues(finalPrompt, clues);
+        finalPrompt = this.replaceClueHistory(finalPrompt, player, roundNumber);
 
         return finalPrompt;
+    }
+
+    private String replaceClues(String prompt, List<String> clues) {
+        prompt = prompt.replace("{CLUE_1}", clues.get(0));
+        prompt = prompt.replace("{CLUE_2}", clues.get(1));
+        prompt = prompt.replace("{CLUE_3}", clues.get(2));
+
+        return prompt;
+    }
+
+    private String replaceClueHistory(String prompt, Player player, int roundNumber) {
+        Team team = this.gameState.getTeamOfPlayer(player);
+
+        List<String> pastClues1 = this.getPastCluesForCodeDigit(1, team, roundNumber);
+        List<String> pastClues2 = this.getPastCluesForCodeDigit(2, team, roundNumber);
+        List<String> pastClues3 = this.getPastCluesForCodeDigit(3, team, roundNumber);
+        List<String> pastClues4 = this.getPastCluesForCodeDigit(4, team, roundNumber);
+
+        prompt = prompt.replace("{PAST_CLUES_1}", createPastCluesText(pastClues1));
+        prompt = prompt.replace("{PAST_CLUES_2}", createPastCluesText(pastClues2));
+        prompt = prompt.replace("{PAST_CLUES_3}", createPastCluesText(pastClues3));
+        prompt = prompt.replace("{PAST_CLUES_4}", createPastCluesText(pastClues4));
+
+        return prompt;
+    }
+
+    private String createPastCluesText(List<String> pastClues) {
+        if (pastClues.isEmpty()) {
+            return "-";
+        }
+
+        return pastClues.stream().map(s -> "\"" + s + "\"").collect(Collectors.joining(", "));
     }
 }

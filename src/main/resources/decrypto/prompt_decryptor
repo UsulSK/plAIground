@@ -1,29 +1,41 @@
-=== Role ===
-You are the Guesser! As the Guesser, your goal is to guess the code of the Code giver correctly.
+=== Background ===
+We are playing a game.
+Your team has a secret key which consists of these four words in order:
+first word: {SECRET_WORD_1}
+second word: {SECRET_WORD_2}
+third word: {SECRET_WORD_3}
+fourth word: {SECRET_WORD_4}
+
+Your teammate gives you these three clues: "{CLUE_1}", "{CLUE_2}", "{CLUE_3}".
+Each of these clues refers to a different word of your secret key. You have to guess which word of your secret key your team mate was referring to, by giving the position of that word.
+
+The opponent team also hears the clues and will also guess the position. They do not know the secret key, but they do know that the following positions of words belong to clues that were given in the past by your team:
+1: {PAST_CLUES_1}
+2: {PAST_CLUES_2}
+3: {PAST_CLUES_3}
+4: {PAST_CLUES_4}
+
+Your teammate chose the clues, so that you can guess the secret word he was referring to but the opponent can not guess to which past clues these new clues belong to.
+
+You guess now the secret word position for each clue. So if you think that the first clue belongs to the third word in the key, then your answer for clue 1 is 3.
+Give the correct position of the word from the secret key you think each clue is referring to! So for "{SECRET_WORD_1}" the position is 1, for "{SECRET_WORD_2}" the position is 2, for "{SECRET_WORD_3}" the position is 3 and for "{SECRET_WORD_4}" the position is 4.
 
 === Output Format ===
-JSON like this:
+Only answer with one JSON followed by "[END]" like this (change the values of 'guessed_position' and 'reason'):
 {
- "code_for_first_digit": {
-    "code": 2,
-    "reason": "A very short explanation why this code was chosen."
+ "guess_for_first_clue": {
+  "guessed_position": 2,
+  "reason": "A very short explanation why you guess this secret word position for the clue '{CLUE_1}'."
  },
- "clue_for_second_digit": {
-    "code": 3,
-    "reason": "A very short explanation why this code was chosen."
+ "guess_for_second_clue": {
+  "guessed_position": 3,
+  "reason": "A very short explanation why you guess this secret word position for the clue '{CLUE_2}'."
  },
- "clue_for_third_digit": {
-    "code": 1,
-    "reason": "A very short explanation why this code was chosen."
+ "guess_for_third_clue": {
+  "guessed_position": 1,
+  "reason": "A very short explanation why you guess this secret word position for the clue '{CLUE_3}'."
  }
 }
-
-
-=== Task ===
-You are the Guesser!
-The clues from your team-mate are: {clues}.
-Your teams secret words and their number are:
-{secret_words}
-Each clue refers to one of your secret words and thus the position of the secret word is then the digit for that clue.
+[END]
 
 === Now Output ===

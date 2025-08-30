@@ -2,22 +2,10 @@ package org.usul.plaiground.backend.games.decrypto.llmroles;
 
 import org.usul.plaiground.backend.games.decrypto.entities.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class LlmPromptCreator {
-    public static String createPromptForEncrypt(GameState gameState, String promptTemplateGeneral, String promptTemplateEncrypt,
-                                                Player player, List<Integer> code, int roundNumber) {
-        String finalPrompt = promptTemplateGeneral + "\n" + promptTemplateEncrypt;
-
-        finalPrompt = getPromptForGeneralTemplate(gameState, finalPrompt, player, roundNumber);
-        finalPrompt = finalPrompt.replace("{secret_words}", getSecretWordsLlmSerialization(gameState, player));
-        finalPrompt = finalPrompt.replace("{code}", getCodeText(code));
-        finalPrompt = finalPrompt.replace("{used_clues}", getAllUsedClues(gameState, player));
-
-        return finalPrompt;
-    }
 
     public static String createPromptForIntercept(GameState gameState, String promptTemplateGeneral, String promptTemplateIntercept,
                                                   Player player, List<String> clues, int roundNumber) {
@@ -28,65 +16,11 @@ public class LlmPromptCreator {
         return finalPrompt;
     }
 
-    public static String createPromptForDecrypt(GameState gameState, String promptTemplateGeneral, String promptTemplateDecrypt,
-                                                Player player, List<String> clues, int roundNumber) {
-        String finalPrompt = promptTemplateGeneral + "\n" + promptTemplateDecrypt;
-        finalPrompt = getPromptForGeneralTemplate(gameState, finalPrompt, player, roundNumber);
-        finalPrompt = finalPrompt.replace("{secret_words}", getSecretWordsLlmSerialization(gameState, player));
-        finalPrompt = finalPrompt.replace("{clues}", getCluesLlmSerialization(clues));
-
-        return finalPrompt;
-    }
-
-    private static String getAllUsedClues(GameState gameState, Player player) {
-        Team teamOfPlayer = gameState.getTeamOfPlayer(player);
-        List<String> usedCodesForDigit1 = new ArrayList<>();
-        List<String> usedCodesForDigit2 = new ArrayList<>();
-        List<String> usedCodesForDigit3 = new ArrayList<>();
-        for (Round round : gameState.getGameLog().getRounds()) {
-            TeamRound teamRound = round.getTeamInfo().get(teamOfPlayer.getName());
-            if (teamRound == null) {
-                break;
-            }
-            List<String> encCode = teamRound.getEncryptedCode();
-            if (encCode.isEmpty()) {
-                continue;
-            }
-            usedCodesForDigit1.add(encCode.get(0));
-            usedCodesForDigit2.add(encCode.get(1));
-            usedCodesForDigit3.add(encCode.get(2));
-        }
-
-        if (usedCodesForDigit1.isEmpty()) {
-            return "no clues have been given yet";
-        }
-
-        return "for first digit: " + usedCodesForDigit1.stream().map(s -> "[" + s + "]").reduce((a, b) -> a + " " + b).get()
-                + "; for second digit: " + usedCodesForDigit2.stream().map(s -> "[" + s + "]").reduce((a, b) -> a + " " + b).get()
-                + "; for third digit: " + usedCodesForDigit3.stream().map(s -> "[" + s + "]").reduce((a, b) -> a + " " + b).get();
-    }
-
     private static String getCluesLlmSerialization(List<String> clues) {
         String result = clues.stream()
                 .map(s -> "[" + s + "]")
                 .collect(Collectors.joining(" "));
         return result;
-    }
-
-    private static String getSecretWordsLlmSerialization(GameState gameState, Player player) {
-        List<String> secretWords = gameState.getTeamOfPlayer(player).getKeywords();
-        StringBuilder swSb = new StringBuilder();
-
-        int counter = 1;
-        for (String secretWord : secretWords) {
-            swSb.append(counter);
-            swSb.append(": ");
-            swSb.append(secretWord);
-            swSb.append("\n");
-            counter++;
-        }
-
-        return swSb.toString();
     }
 
     private static String getPromptForGeneralTemplate(GameState gameState, String promptTemplateGeneral, Player player, int roundNumber) {

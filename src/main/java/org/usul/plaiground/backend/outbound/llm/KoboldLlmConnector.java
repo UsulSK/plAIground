@@ -17,13 +17,19 @@ public class KoboldLlmConnector {
     private static final Logger log = LoggerFactory.getLogger(KoboldLlmConnector.class);
 
     public String chat(String msg) {
+        return this.chat(msg, 350, 0.7F, 0.9F);
+    }
+
+    public String chat(String msg, int maxLength, float temperature, float top_p) {
         String baseUrl = "http://127.0.0.1:5001"; // KoboldCpp API
         String endpoint = "/api/v1/generate";
 
         Random random = new Random(System.currentTimeMillis());
         int seed = random.nextInt();
 
-        JSONObject payload = RequestBodyBuilderUtil.buildJsonBody(msg, 400, 0.7F, seed);
+        JSONObject payload = RequestBodyBuilderUtil.buildJsonBody(msg, maxLength, temperature, top_p, seed);
+
+        log.info("llm_payload: \n" + payload.toString(4));
 
         HttpResponse<String> response = null;
         try {
@@ -36,6 +42,7 @@ public class KoboldLlmConnector {
             HttpClient client = HttpClient.newHttpClient();
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (Exception e) {
+            log.error("llm_contact_error!", e);
             throw new RuntimeException(e);
         }
         String responseText = response.body();
@@ -45,10 +52,14 @@ public class KoboldLlmConnector {
         try {
             parsedReponse = mapper.readValue(responseText, KoboldLlmResponse.class);
         } catch (Exception e) {
+            log.error("llm_json_parse_error!", e);
+            log.info("original_llm_answer: " + responseText);
             throw new RuntimeException(e);
         }
 
         String textResponse = parsedReponse.getResults().get(0).getText();
+
+        log.info("llm_answer: \n" + textResponse);
 
         return textResponse;
     }

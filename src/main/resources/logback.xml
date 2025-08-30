@@ -2,7 +2,7 @@
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <!-- single-line format: [LEVEL] message -->
-            <pattern>[%level] %msg%n</pattern>
+            <pattern>\n[%level] \n%msg%n</pattern>
         </encoder>
     </appender>
 
@@ -11,7 +11,7 @@
         <file>log.txt</file>
         <append>false</append>
         <encoder>
-            <pattern>[%date{HH:mm:ss}] [%level] %msg%n</pattern>
+            <pattern>\n[%level] \n%msg%n</pattern>
         </encoder>
     </appender>
 
