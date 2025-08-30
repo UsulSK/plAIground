@@ -1,0 +1,5 @@
+
+This file is used by LlmRequestBodyBuilderForTesting for testing prompts.
+
+It generates prompts that you can then send to the KoboldCpp REST API /api/v1/generate as body to check if it generates a useful response.
+

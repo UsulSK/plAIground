@@ -5,15 +5,18 @@ Clues must be clear enough for the Guesser, who knows the secret words, but obsc
 === Output Format ===
 JSON like this:
 {
- "clue_for_first_digit": {
+ "clue_for_first_digit_of_code": {
+    "secret_word": "the secret word the code refers to",
     "clue": "the clue",
     "reason": "A very short explanation why this clue was chosen."
  },
- "clue_for_second_digit": {
+ "clue_for_second_digit_of_code": {
+    "secret_word": "the secret word the code refers to",
     "clue": "the clue",
     "reason": "A very short explanation why this clue was chosen."
  },
- "clue_for_third_digit": {
+ "clue_for_third_digit_of_code": {
+    "secret_word": "the secret word the code refers to",
     "clue": "the clue",
     "reason": "A very short explanation why this clue was chosen."
  }
@@ -28,5 +31,6 @@ So try to avoid giving similar clues per digit as before or the opponent team ca
 Your teams secret words and their number are:
 {secret_words}
 Give three clues which relate to the three digits of the given code. For each clue, give a short reason why you picked that clue.
+Also give the secret word to which the clue refers to, so that it shows you understood the game.
 
 === Now Output ===
