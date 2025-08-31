@@ -15,7 +15,7 @@ public class LlmRequestBodyBuilderForTesting {
 
         String promptForTest = fileReaderUtil.readTextFile("prompt_test");
 
-        JSONObject bodyJson = RequestBodyBuilderUtil.buildJsonBody(promptForTest, 400, 0.7F, .9F,123);
+        JSONObject bodyJson = RequestBodyBuilderUtil.buildJsonBody(promptForTest, 350, 0.7F, .9F,123);
 
         System.out.println("\n\nPrompt for request:\n\n" + bodyJson.toString(4) + "\n\n");
     }

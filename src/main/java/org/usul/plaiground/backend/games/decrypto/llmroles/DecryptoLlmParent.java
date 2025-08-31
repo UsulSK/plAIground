@@ -115,4 +115,12 @@ public class DecryptoLlmParent {
 
         return pastCluesForCodeDigit;
     }
+
+    protected String replaceClues(String prompt, List<String> clues) {
+        prompt = prompt.replace("{CLUE_1}", clues.get(0));
+        prompt = prompt.replace("{CLUE_2}", clues.get(1));
+        prompt = prompt.replace("{CLUE_3}", clues.get(2));
+
+        return prompt;
+    }
 }

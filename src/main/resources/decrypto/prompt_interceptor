@@ -1,28 +1,39 @@
-=== Role ===
-You are intercepting the opponent team! Your job is to guess the code based on the clues of the opponent team and the game history information.
+=== Background ===
+We are playing a game.
+
+Someone from the opponent team gives the following three clues to his teammate: "{CLUE_1}", "{CLUE_2}", "{CLUE_3}".
+Each of these clues refers to a different secret word, that you do not know. There are four secret words.
+
+From the past, you do know that the following clues belong to the following unknown secret words:
+first secret word: {PAST_CLUES_1}
+second secret word: {PAST_CLUES_2}
+third secret word: {PAST_CLUES_3}
+fourth secret word: {PAST_CLUES_4}
+
+You are now trying to guess for each clue to which secret word it might belong to, based on the past clues.
+
+You guess now the secret word for each clue by giving the position number of the secret word per clue. So if you think that the first clue belongs to the third secret word, then your answer for clue 1 is 3.
+Also give a very short explanation why you chose that secret word for the clue.
 
 === Output Format ===
-JSON like this:
+Only answer with one JSON followed by "[END]" like this (change the values of 'guessed_position' and 'reason' and 'guess_secret_word'):
 {
- "code_for_first_digit": {
-    "code": 2,
-    "reason": "A very short explanation why this code was chosen."
+ "guess_for_first_clue": {
+  "guessed_position": 2,
+  "reason": "A very short explanation why you guess this secret word position for the clue '{CLUE_1}'.",
+  "guess_secret_word": "Your guess what the secret word for that position is."
  },
- "clue_for_second_digit": {
-    "code": 3,
-    "reason": "A very short explanation why this code was chosen."
+ "guess_for_second_clue": {
+  "guessed_position": 3,
+  "reason": "A very short explanation why you guess this secret word position for the clue '{CLUE_2}'.",
+  "guess_secret_word": "Your guess what the secret word for that position is."
  },
- "clue_for_third_digit": {
-    "code": 1,
-    "reason": "A very short explanation why this code was chosen."
+ "guess_for_third_clue": {
+  "guessed_position": 1,
+  "reason": "A very short explanation why you guess this secret word position for the clue '{CLUE_3}'.",
+  "guess_secret_word": "Your guess what the secret word for that position is."
  }
 }
-
-
-=== Task ===
-You are intercepting the opponent team! Guess their code!
-The clues from the opponent team are: {clues}.
-
-Each clue refers to one of the secret words of the opponent team that you do not know and thus the position of the secret word is then the digit for that clue.
+[END]
 
 === Now Output ===
