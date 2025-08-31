@@ -17,4 +17,9 @@ public class TeamRound {
     private List<String> encryptedCode = new ArrayList<>();
     private List<Integer> guessedCodeByOtherTeam = new ArrayList<>();
     private List<Integer> guessedCodeByOwnTeam = new ArrayList<>();
+    private List<String> encryptedCodeReasons = new ArrayList<>();
+    private List<String> encryptedCodeOpponentReasons = new ArrayList<>();
+    private List<String> interceptKeywordGuess = new ArrayList<>();
+    private List<String> interceptReasons = new ArrayList<>();
+    private List<String> decryptReasons = new ArrayList<>();
 }

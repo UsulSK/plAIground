@@ -5,9 +5,7 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usul.plaiground.backend.games.decrypto.entities.*;
-import org.usul.plaiground.backend.games.decrypto.llmroles.DecryptorLlm;
-import org.usul.plaiground.backend.games.decrypto.llmroles.EncryptorLlm;
-import org.usul.plaiground.backend.games.decrypto.llmroles.InterceptorLlm;
+import org.usul.plaiground.backend.games.decrypto.llmroles.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,17 +108,23 @@ public class DecryptoGameLogic {
         teamRound.getCode().addAll(code);
 
         log.info(transmittingTeam.getName() + " do_encrypt_secret_words " + transmittingTeam.getKeywords() + " and code " + code);
-        List<String> encryptedCodes = brainEncryptor.encrypt(currEncryptor, code, this.gameState.getRoundNumber());
+        EncryptResponse encryptResponse = this.brainEncryptor.encrypt(currEncryptor, code, this.gameState.getRoundNumber());
+        List<String> encryptedCodes = encryptResponse.getClues();
         log.info("encrypted_secret_words: " + encryptedCodes + "\n");
         teamRound.getEncryptedCode().addAll(encryptedCodes);
+        teamRound.getEncryptedCodeReasons().addAll(encryptResponse.getReasonsTeammate());
+        teamRound.getEncryptedCodeOpponentReasons().addAll(encryptResponse.getReasonsOpponent());
         this.gameUpdateListener.run();
 
         boolean interceptingSuccessful = false;
         if (round.getRoundNumber() > 0) {
             log.info(interceptingTeam.getName() + " INTERCEPT");
-            List<Integer> guessedCodes = brainInterceptor.intercept(currInterceptor, encryptedCodes, this.gameState.getRoundNumber());
+            InterceptResponse interceptResponse = brainInterceptor.intercept(currInterceptor, encryptedCodes, this.gameState.getRoundNumber());
+            List<Integer> guessedCodes = interceptResponse.getGuessedCode();
             log.info("intercept_guess: " + guessedCodes + "\n");
             teamRound.getGuessedCodeByOtherTeam().addAll(guessedCodes);
+            teamRound.getInterceptReasons().addAll(interceptResponse.getReasons());
+            teamRound.getInterceptKeywordGuess().addAll(interceptResponse.getGuessedSecretWords());
 
             if (guessedCodes.equals(code)) {
                 interceptingSuccessful = true;
@@ -132,9 +136,11 @@ public class DecryptoGameLogic {
 
         if (!interceptingSuccessful) {
             log.info(transmittingTeam.getName() + " DECRYPT");
-            List<Integer> decryptedCodes = brainDecryptor.decrypt(currDecryptor, encryptedCodes, this.gameState.getRoundNumber());
+            DecryptResponse decryptResponse = brainDecryptor.decrypt(currDecryptor, encryptedCodes, this.gameState.getRoundNumber());
+            List<Integer> decryptedCodes = decryptResponse.getCode();
             log.info("guesser_guess: " + decryptedCodes + "\n");
             teamRound.getGuessedCodeByOwnTeam().addAll(decryptedCodes);
+            teamRound.getDecryptReasons().addAll(decryptResponse.getDecryptReasons());
 
             if (!decryptedCodes.equals(code)) {
                 round.addMiscommunicationToken(transmittingTeam);

@@ -6,6 +6,7 @@ import org.usul.plaiground.backend.games.decrypto.entities.Team;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class TeamView extends JPanel {
@@ -25,7 +26,14 @@ public class TeamView extends JPanel {
 
         teamText.setForeground(Color.CYAN);
 
-        this.add(this.teamText, BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(
+                this.teamText,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        );
+        scrollPane.getViewport().setBackground(Color.BLACK);
+
+        this.add(scrollPane, BorderLayout.CENTER);
 
         this.updateView();
 
@@ -35,15 +43,23 @@ public class TeamView extends JPanel {
     public void updateView() {
         String teamInfoText = "<html><b>" + this.team.getName() + "</b>";
         teamInfoText += "<br><br>";
-        for (Player player : this.team.getPlayers()) {
-            teamInfoText += "[" + player.getName() + "] ";
-        }
-        teamInfoText += "<br><br>";
+        teamInfoText += "<table>";
 
-        String keywords = this.team.getKeywords().stream().map(s -> "<b>" + s + "</b>").collect(Collectors.joining(" "));
-        ;
-        teamInfoText += keywords;
-        teamInfoText += "<br><br>";
+        int keywordNr = 0;
+        for (String keyword : this.team.getKeywords()) {
+            teamInfoText += "<tr>";
+            teamInfoText += "<td><b>";
+            teamInfoText += keyword;
+            teamInfoText += "</b></td>";
+            teamInfoText += "<td>";
+            teamInfoText += this.createPastCluesText(this.gameState.getGameLog().getPastCluesForCodeDigit(keywordNr + 1, this.team));
+            teamInfoText += "</td>";
+            teamInfoText += "</tr>";
+            keywordNr++;
+        }
+        teamInfoText += "</table>";
+
+        teamInfoText += "<br>";
 
         teamInfoText += this.gameState.getInterceptTokensForTeam(this.team) + " intercept tokens";
         teamInfoText += "<br>";
@@ -56,5 +72,13 @@ public class TeamView extends JPanel {
         teamInfoText += "</html>";
 
         this.teamText.setText(teamInfoText);
+    }
+
+    private String createPastCluesText(List<String> pastClues) {
+        if (pastClues.isEmpty()) {
+            return "-";
+        }
+
+        return pastClues.stream().map(s -> "\"" + s + "\"").collect(Collectors.joining(", "));
     }
 }

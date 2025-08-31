@@ -25,34 +25,21 @@ public class DecryptoLlmParent {
     @Inject
     protected FileReaderUtil fileReaderUtil;
 
-    protected <T> List<T> useLlm(String prompt, Function<String, List<T>> parser) {
+    protected <T extends ILlmResponse> T useLlm(String prompt, Function<String, T> parser) {
         int maxRetries = 5;
-
-        String answer = null;
         int currTry = 0;
-        boolean parsingSucceeded = true;
-        List<T> parsedAnswer = new ArrayList<>();
-        do {
-            parsingSucceeded = true;
-            if (currTry >= maxRetries) {
-                break;
-            }
 
+        while (currTry < maxRetries) {
             try {
-                answer = this.llm.chat(prompt, 350, 0.7F, 0.9F);
-                parsedAnswer = parser.apply(answer);
+                String answer = this.llm.chat(prompt, 350, 0.7F, 0.9F);
+                return parser.apply(answer);
             } catch (Exception e) {
-                parsingSucceeded = false;
                 currTry++;
-                log.error("llm_parsing_error!", e);
+                log.error("llm_parsing_error! try=" + currTry, e);
             }
-        } while (!parsingSucceeded);
-
-        if ((currTry >= maxRetries) && parsedAnswer.isEmpty()) {
-            throw new RuntimeException("llm_too_many_retries");
         }
 
-        return parsedAnswer;
+        throw new RuntimeException("llm_too_many_retries");
     }
 
     protected String replaceReferringSecretWords(String prompt, Player player, List<Integer> code) {
@@ -85,35 +72,6 @@ public class DecryptoLlmParent {
 
     protected static String getCodeText(List<Integer> code) {
         return code.stream().map(String::valueOf).reduce("", String::concat);
-    }
-
-    protected List<String> getPastCluesForCodeDigit(int codeDigit, Team team) {
-        return this.getPastCluesForCodeDigit(codeDigit, team, -1);
-    }
-
-    protected List<String> getPastCluesForCodeDigit(int codeDigit, Team team, int endRoundNumberExcluding) {
-        List<String> pastCluesForCodeDigit = new ArrayList<>();
-
-        for (Round round : this.gameState.getGameLog().getRounds()) {
-            if ((endRoundNumberExcluding >= 0) && (round.getRoundNumber() == endRoundNumberExcluding)) {
-                break;
-            }
-
-            TeamRound teamRound = round.getTeamInfo().get(team.getName());
-            if (!teamRound.getCode().contains(codeDigit)) {
-                continue;
-            }
-            if (teamRound.getEncryptedCode().isEmpty()) {
-                continue;
-            }
-
-            int codeDigitPosition = teamRound.getCode().indexOf(codeDigit);
-
-            String pastClue = teamRound.getEncryptedCode().get(codeDigitPosition);
-            pastCluesForCodeDigit.add(pastClue);
-        }
-
-        return pastCluesForCodeDigit;
     }
 
     protected String replaceClues(String prompt, List<String> clues) {

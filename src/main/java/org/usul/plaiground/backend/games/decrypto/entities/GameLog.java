@@ -34,4 +34,36 @@ public class GameLog extends ParentEntity {
         newRound.setTeam2InterceptTokens(prevRound.getTeam2InterceptTokens());
         this.rounds.add(newRound);
     }
+
+    public List<String> getPastCluesForCodeDigit(int codeDigit, Team team) {
+        return this.getPastCluesForCodeDigit(codeDigit, team, -1);
+    }
+
+    public List<String> getPastCluesForCodeDigit(int codeDigit, Team team, int endRoundNumberExcluding) {
+        List<String> pastCluesForCodeDigit = new ArrayList<>();
+
+        for (Round round : this.getRounds()) {
+            if ((endRoundNumberExcluding >= 0) && (round.getRoundNumber() == endRoundNumberExcluding)) {
+                break;
+            }
+
+            TeamRound teamRound = round.getTeamInfo().get(team.getName());
+            if (teamRound == null) {
+                continue;
+            }
+            if (!teamRound.getCode().contains(codeDigit)) {
+                continue;
+            }
+            if (teamRound.getEncryptedCode().isEmpty()) {
+                continue;
+            }
+
+            int codeDigitPosition = teamRound.getCode().indexOf(codeDigit);
+
+            String pastClue = teamRound.getEncryptedCode().get(codeDigitPosition);
+            pastCluesForCodeDigit.add(pastClue);
+        }
+
+        return pastCluesForCodeDigit;
+    }
 }

@@ -22,8 +22,8 @@ public class PlaigroundMainView extends JFrame {
         this.setNewContentPane(this.mainScreen);
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int width = screenSize.width / 3 * 2;
-        int height = screenSize.height / 3 * 2;
+        int width = screenSize.width / 9 * 8;
+        int height = screenSize.height / 9 * 8;
         this.setSize(width, height);
         this.setMinimumSize(new Dimension(width, height));
 

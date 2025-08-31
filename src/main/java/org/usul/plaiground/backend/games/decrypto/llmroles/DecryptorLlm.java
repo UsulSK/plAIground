@@ -12,35 +12,40 @@ import java.util.stream.Collectors;
 
 public class DecryptorLlm extends DecryptoLlmParent {
 
-    public List<Integer> decrypt(Player player, List<String> encryptedCode, int roundNumber) {
+    public DecryptResponse decrypt(Player player, List<String> encryptedCode, int roundNumber) {
         String prompt = this.createPrompt(player, encryptedCode, roundNumber);
 
         if (System.getenv("NO_LLM_DEBUG_MODE") != null) {
             log.info("no_llm_mode");
             log.info(prompt);
-            return new ArrayList<>(List.of(2, 1, 3));
+            DecryptResponse response = new DecryptResponse();
+            response.getCode().addAll(List.of(2, 1, 3));
+            response.getDecryptReasons().addAll(List.of("reason1", "reason2", "reason3"));
+            return response;
         }
 
-        List<Integer> guessedCode = this.useLlm(prompt, this::parseAnswer);
-
-        return guessedCode;
+        return this.useLlm(prompt, this::parseAnswer);
     }
 
-    private List<Integer> parseAnswer(String answer) {
-        List<Integer> guessedCode = new ArrayList<>();
+    private DecryptResponse parseAnswer(String answer) {
+        DecryptResponse response = new DecryptResponse();
+
         try {
             String jsonPartOfAnswer = StringParser.parseJson(answer);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(jsonPartOfAnswer);
-            guessedCode.add(node.get("guess_for_first_clue").get("guessed_position").asInt());
-            guessedCode.add(node.get("guess_for_second_clue").get("guessed_position").asInt());
-            guessedCode.add(node.get("guess_for_third_clue").get("guessed_position").asInt());
+            response.getCode().add(node.get("guess_for_first_clue").get("guessed_position").asInt());
+            response.getCode().add(node.get("guess_for_second_clue").get("guessed_position").asInt());
+            response.getCode().add(node.get("guess_for_third_clue").get("guessed_position").asInt());
+            response.getDecryptReasons().add(node.get("guess_for_first_clue").get("reason").asText());
+            response.getDecryptReasons().add(node.get("guess_for_second_clue").get("reason").asText());
+            response.getDecryptReasons().add(node.get("guess_for_third_clue").get("reason").asText());
         } catch (Exception e) {
             log.error("decrypt_parse_answer_error", e);
             throw new RuntimeException(e);
         }
 
-        return guessedCode;
+        return response;
     }
 
     private String createPrompt(Player player, List<String> clues, int roundNumber) {
@@ -56,10 +61,10 @@ public class DecryptorLlm extends DecryptoLlmParent {
     private String replaceClueHistory(String prompt, Player player, int roundNumber) {
         Team team = this.gameState.getTeamOfPlayer(player);
 
-        List<String> pastClues1 = this.getPastCluesForCodeDigit(1, team, roundNumber);
-        List<String> pastClues2 = this.getPastCluesForCodeDigit(2, team, roundNumber);
-        List<String> pastClues3 = this.getPastCluesForCodeDigit(3, team, roundNumber);
-        List<String> pastClues4 = this.getPastCluesForCodeDigit(4, team, roundNumber);
+        List<String> pastClues1 = this.gameState.getGameLog().getPastCluesForCodeDigit(1, team, roundNumber);
+        List<String> pastClues2 = this.gameState.getGameLog().getPastCluesForCodeDigit(2, team, roundNumber);
+        List<String> pastClues3 = this.gameState.getGameLog().getPastCluesForCodeDigit(3, team, roundNumber);
+        List<String> pastClues4 = this.gameState.getGameLog().getPastCluesForCodeDigit(4, team, roundNumber);
 
         prompt = prompt.replace("{PAST_CLUES_1}", createPastCluesText(pastClues1));
         prompt = prompt.replace("{PAST_CLUES_2}", createPastCluesText(pastClues2));

@@ -10,9 +10,7 @@ import org.usul.plaiground.backend.games.decrypto.DecryptoGame;
 import org.usul.plaiground.backend.games.decrypto.DecryptoGameLogic;
 import org.usul.plaiground.backend.games.decrypto.entities.GameLog;
 import org.usul.plaiground.backend.games.decrypto.entities.GameState;
-import org.usul.plaiground.backend.games.decrypto.llmroles.DecryptorLlm;
-import org.usul.plaiground.backend.games.decrypto.llmroles.EncryptorLlm;
-import org.usul.plaiground.backend.games.decrypto.llmroles.InterceptorLlm;
+import org.usul.plaiground.backend.games.decrypto.llmroles.*;
 import org.usul.plaiground.utils.FileReaderUtil;
 import org.usul.plaiground.utils.RandomizerUtil;
 import org.usul.plaiground.utils.TestUtil;
@@ -41,6 +39,15 @@ public class DecryptoGameIntegrationTest {
         this.encryptorLlm = Mockito.mock(EncryptorLlm.class);
         this.decryptorLlm = Mockito.mock(DecryptorLlm.class);
         this.interceptorLlm = Mockito.mock(InterceptorLlm.class);
+
+        EncryptResponse encryptResponse = new EncryptResponse();
+        Mockito.lenient().when(this.encryptorLlm.encrypt(Mockito.any(), Mockito.anyList(), Mockito.anyInt())).thenReturn(encryptResponse);
+
+        DecryptResponse decryptResponse = new DecryptResponse();
+        Mockito.lenient().when(this.decryptorLlm.decrypt(Mockito.any(), Mockito.anyList(), Mockito.anyInt())).thenReturn(decryptResponse);
+
+        InterceptResponse interceptResponse = new InterceptResponse();
+        Mockito.lenient().when(this.interceptorLlm.intercept(Mockito.any(), Mockito.anyList(), Mockito.anyInt())).thenReturn(interceptResponse);
 
         this.decryptoGameLogic = new DecryptoGameLogic();
         TestUtil.setPrivateField(this.decryptoGameLogic, "brainEncryptor", this.encryptorLlm);

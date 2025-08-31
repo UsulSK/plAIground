@@ -95,8 +95,8 @@ public class RoundView extends JPanel {
         sb.append("<br>");
 
         sb.append("Code: ");
-        String code = teamRound.getCode().stream().map(s -> "<b>" + s + "</b>").collect(Collectors.joining(" "));
-        sb.append(code);
+        String codeText = teamRound.getCode().stream().map(s -> "<b>" + s + "</b>").collect(Collectors.joining(" "));
+        sb.append(codeText);
         sb.append("<br>");
 
         if (!teamRound.getEncryptedCode().isEmpty()) {
@@ -104,6 +104,33 @@ public class RoundView extends JPanel {
             String clues = teamRound.getEncryptedCode().stream().map(s -> "<b>[" + s + "]</b>").collect(Collectors.joining(" "));
             sb.append(clues);
             sb.append("<br>");
+            int clueNr = 0;
+            for (String clue : teamRound.getEncryptedCode()) {
+                int code = teamRound.getCode().get(clueNr);
+                sb.append("&nbsp;&nbsp;&nbsp;[");
+                sb.append(code);
+                sb.append(" - ");
+                sb.append(clue);
+                sb.append(" - ");
+                sb.append(team.getKeywords().get(code - 1));
+                sb.append("] Reason that helps teammate: \"");
+                sb.append(teamRound.getEncryptedCodeReasons().get(clueNr));
+                sb.append("\"");
+                sb.append("<br>");
+                if (!teamRound.getEncryptedCodeOpponentReasons().isEmpty()) {
+                    sb.append("&nbsp;&nbsp;&nbsp;[");
+                    sb.append(code);
+                    sb.append(" - ");
+                    sb.append(clue);
+                    sb.append(" - ");
+                    sb.append(team.getKeywords().get(code - 1));
+                    sb.append("] Reason that confuses opponent: \"");
+                    sb.append(teamRound.getEncryptedCodeOpponentReasons().get(clueNr));
+                    sb.append("\"");
+                    sb.append("<br>");
+                }
+                clueNr++;
+            }
         }
 
         if (!teamRound.getGuessedCodeByOtherTeam().isEmpty()) {
@@ -114,6 +141,28 @@ public class RoundView extends JPanel {
                 sb.append(" <b>=> SUCCESS!</b>");
             }
             sb.append("<br>");
+
+            int clueNr = 0;
+            for (String clue : teamRound.getEncryptedCode()) {
+                sb.append("&nbsp;&nbsp;&nbsp;[");
+                sb.append(clue);
+                sb.append(" - ");
+                sb.append(teamRound.getGuessedCodeByOtherTeam().get(clueNr));
+                sb.append("] Reason for guess: \"");
+                sb.append(teamRound.getInterceptReasons().get(clueNr));
+                sb.append("\"");
+
+                sb.append("<br>");
+                sb.append("&nbsp;&nbsp;&nbsp;[");
+                sb.append(clue);
+                sb.append(" - ");
+                sb.append(teamRound.getGuessedCodeByOtherTeam().get(clueNr));
+                sb.append("] Guessed secret word: \"");
+                sb.append(teamRound.getInterceptKeywordGuess().get(clueNr));
+                sb.append("\"");
+                sb.append("<br>");
+                clueNr++;
+            }
         }
 
         if (!teamRound.getGuessedCodeByOwnTeam().isEmpty()) {
@@ -124,6 +173,19 @@ public class RoundView extends JPanel {
                 sb.append(" <b>=> MISSCOMMUNICATION!</b>");
             }
             sb.append("<br>");
+
+            int clueNr = 0;
+            for (String clue : teamRound.getEncryptedCode()) {
+                sb.append("&nbsp;&nbsp;&nbsp;[");
+                sb.append(clue);
+                sb.append(" - ");
+                sb.append(teamRound.getGuessedCodeByOwnTeam().get(clueNr));
+                sb.append("] Reason for guess: \"");
+                sb.append(teamRound.getDecryptReasons().get(clueNr));
+                sb.append("\"");
+                sb.append("<br>");
+                clueNr++;
+            }
         }
     }
 

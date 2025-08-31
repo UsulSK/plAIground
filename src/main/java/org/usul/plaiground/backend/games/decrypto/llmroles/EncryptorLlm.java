@@ -6,41 +6,53 @@ import org.usul.plaiground.backend.games.decrypto.entities.Player;
 import org.usul.plaiground.backend.games.decrypto.entities.Team;
 import org.usul.plaiground.utils.StringParser;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class EncryptorLlm extends DecryptoLlmParent {
 
-    public List<String> encrypt(Player player, List<Integer> code, int roundNumber) {
+    public EncryptResponse encrypt(Player player, List<Integer> code, int roundNumber) {
         String prompt = this.createPrompt(player, code, roundNumber);
 
         if (System.getenv("NO_LLM_DEBUG_MODE") != null) {
             log.info("no_llm_mode");
             log.info("prompt:\n\n" + prompt + "\n\n");
-            return new ArrayList<>(List.of("clueBanana", "clueApple", "clueOrange"));
+            EncryptResponse response = new EncryptResponse();
+            response.getClues().addAll(List.of("clueBanana", "clueApple", "clueOrange"));
+            response.getReasonsTeammate().addAll(List.of("reason1", "reason2", "reason3"));
+            response.getReasonsOpponent().addAll(List.of("reasonOpponent1", "reasonOpponent2", "reasonOpponent3"));
+
+            return response;
         }
 
-        List<String> clues = this.useLlm(prompt, this::parseAnswer);
-
-        return clues;
+        return this.useLlm(prompt, this::parseAnswer);
     }
 
-    private List<String> parseAnswer(String answer) {
-        List<String> clues = new ArrayList<>();
+    private EncryptResponse parseAnswer(String answer) {
+        EncryptResponse response = new EncryptResponse();
+
         try {
             String jsonPartOfAnswer = StringParser.parseJson(answer);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(jsonPartOfAnswer);
-            clues.add(node.get("clue_for_first_digit_of_code").get("clue").asText());
-            clues.add(node.get("clue_for_second_digit_of_code").get("clue").asText());
-            clues.add(node.get("clue_for_third_digit_of_code").get("clue").asText());
+            response.getClues().add(node.get("clue_for_first_digit_of_code").get("clue").asText());
+            response.getClues().add(node.get("clue_for_second_digit_of_code").get("clue").asText());
+            response.getClues().add(node.get("clue_for_third_digit_of_code").get("clue").asText());
+            response.getReasonsTeammate().add(node.get("clue_for_first_digit_of_code").get("reason_teammate").asText());
+            response.getReasonsTeammate().add(node.get("clue_for_second_digit_of_code").get("reason_teammate").asText());
+            response.getReasonsTeammate().add(node.get("clue_for_third_digit_of_code").get("reason_teammate").asText());
+
+            if (node.get("clue_for_first_digit_of_code").get("reason_opponent") != null) {
+                response.getReasonsOpponent().add(node.get("clue_for_first_digit_of_code").get("reason_opponent").asText());
+                response.getReasonsOpponent().add(node.get("clue_for_second_digit_of_code").get("reason_opponent").asText());
+                response.getReasonsOpponent().add(node.get("clue_for_third_digit_of_code").get("reason_opponent").asText());
+            }
         } catch (Exception e) {
             log.error("encrypt_parse_answer_error", e);
             throw new RuntimeException(e);
         }
 
-        return clues;
+        return response;
     }
 
     private String createPrompt(Player player, List<Integer> code, int roundNumber) {
@@ -69,7 +81,7 @@ public class EncryptorLlm extends DecryptoLlmParent {
 
         String hintReplacementText = "";
 
-        List<String> pastCluesForCodeDigit = this.getPastCluesForCodeDigit(codeDigit, team);
+        List<String> pastCluesForCodeDigit = this.gameState.getGameLog().getPastCluesForCodeDigit(codeDigit, team);
 
         if (pastCluesForCodeDigit.isEmpty()) {
             hintReplacementText = ".";
@@ -90,7 +102,7 @@ public class EncryptorLlm extends DecryptoLlmParent {
         String clueHistoryReplacementText = "";
 
         for (Integer codeDigit : code) {
-            List<String> pastCluesForCodeDigit = this.getPastCluesForCodeDigit(codeDigit, team);
+            List<String> pastCluesForCodeDigit = this.gameState.getGameLog().getPastCluesForCodeDigit(codeDigit, team);
 
             if (pastCluesForCodeDigit.isEmpty()) {
                 continue;

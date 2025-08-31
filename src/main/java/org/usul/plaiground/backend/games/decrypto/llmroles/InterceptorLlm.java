@@ -2,47 +2,53 @@ package org.usul.plaiground.backend.games.decrypto.llmroles;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
 import org.usul.plaiground.backend.games.decrypto.entities.Player;
 import org.usul.plaiground.backend.games.decrypto.entities.Team;
-import org.usul.plaiground.utils.FileReaderUtil;
 import org.usul.plaiground.utils.StringParser;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class InterceptorLlm extends DecryptoLlmParent {
 
-    public List<Integer> intercept(Player player, List<String> encryptedCode, int roundNumber) {
+    public InterceptResponse intercept(Player player, List<String> encryptedCode, int roundNumber) {
         String prompt = this.createPrompt(player, encryptedCode, roundNumber);
 
         if (System.getenv("NO_LLM_DEBUG_MODE") != null) {
             log.info("no_llm_mode");
             log.info(prompt);
-            return new ArrayList<>(List.of(4, 3, 2));
+            InterceptResponse response = new InterceptResponse();
+            response.getGuessedCode().addAll(List.of(4, 3, 2));
+            response.getGuessedSecretWords().addAll(List.of("guessedWord1", "guessedWord2", "guessedWord3"));
+            response.getReasons().addAll(List.of("reason1", "reason2", "reason3"));
+            return response;
         }
 
-        List<Integer> guessedCode = this.useLlm(prompt, this::parseAnswer);
-
-        return guessedCode;
+        return this.useLlm(prompt, this::parseAnswer);
     }
 
-    private List<Integer> parseAnswer(String answer) {
-        List<Integer> guessedCode = new ArrayList<>();
+    private InterceptResponse parseAnswer(String answer) {
+        InterceptResponse response = new InterceptResponse();
+
         try {
             String jsonPartOfAnswer = StringParser.parseJson(answer);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(jsonPartOfAnswer);
-            guessedCode.add(node.get("guess_for_first_clue").get("guessed_position").asInt());
-            guessedCode.add(node.get("guess_for_second_clue").get("guessed_position").asInt());
-            guessedCode.add(node.get("guess_for_third_clue").get("guessed_position").asInt());
+            response.getGuessedCode().add(node.get("guess_for_first_clue").get("guessed_position").asInt());
+            response.getGuessedCode().add(node.get("guess_for_second_clue").get("guessed_position").asInt());
+            response.getGuessedCode().add(node.get("guess_for_third_clue").get("guessed_position").asInt());
+            response.getReasons().add(node.get("guess_for_first_clue").get("reason").asText());
+            response.getReasons().add(node.get("guess_for_second_clue").get("reason").asText());
+            response.getReasons().add(node.get("guess_for_third_clue").get("reason").asText());
+            response.getGuessedSecretWords().add(node.get("guess_for_first_clue").get("guess_secret_word").asText());
+            response.getGuessedSecretWords().add(node.get("guess_for_second_clue").get("guess_secret_word").asText());
+            response.getGuessedSecretWords().add(node.get("guess_for_third_clue").get("guess_secret_word").asText());
         } catch (Exception e) {
             log.error("intercept_parse_answer_error", e);
             throw new RuntimeException(e);
         }
 
-        return guessedCode;
+        return response;
     }
 
     private String createPrompt(Player player, List<String> clues, int roundNumber) {
@@ -58,10 +64,10 @@ public class InterceptorLlm extends DecryptoLlmParent {
         Team team = this.gameState.getTeamOfPlayer(player);
         Team otherTeam = this.gameState.getOtherTeam(team);
 
-        List<String> pastClues1 = this.getPastCluesForCodeDigit(1, otherTeam, roundNumber);
-        List<String> pastClues2 = this.getPastCluesForCodeDigit(2, otherTeam, roundNumber);
-        List<String> pastClues3 = this.getPastCluesForCodeDigit(3, otherTeam, roundNumber);
-        List<String> pastClues4 = this.getPastCluesForCodeDigit(4, otherTeam, roundNumber);
+        List<String> pastClues1 = this.gameState.getGameLog().getPastCluesForCodeDigit(1, otherTeam, roundNumber);
+        List<String> pastClues2 = this.gameState.getGameLog().getPastCluesForCodeDigit(2, otherTeam, roundNumber);
+        List<String> pastClues3 = this.gameState.getGameLog().getPastCluesForCodeDigit(3, otherTeam, roundNumber);
+        List<String> pastClues4 = this.gameState.getGameLog().getPastCluesForCodeDigit(4, otherTeam, roundNumber);
 
         prompt = prompt.replace("{PAST_CLUES_1}", createPastCluesText(pastClues1));
         prompt = prompt.replace("{PAST_CLUES_2}", createPastCluesText(pastClues2));
