@@ -1,7 +1,0 @@
-res://games/mind_meld/frontend/setup/mind_meld_setup.tscn
-res://brain/brain.gd
-res://games/mind_meld/boundary/mind_meld_manager.gd
-res://games/mind_meld/game_logic/control/mind_meld_ctr.gd
-res://games/mind_meld/manager/ai_player.gd
-res://games/mind_meld/manager/mind_meld_manager.gd
-res://games/mind_meld/frontend/main/mind_meld_scene.gd
