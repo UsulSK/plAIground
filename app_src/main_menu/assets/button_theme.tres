@@ -1,0 +1,8 @@
+[gd_resource type="Theme" format=3 uid="uid://2pvmmwwojlrf"]
+
+[resource]
+resource_local_to_scene = true
+resource_name = "MainMenuTheme"
+Button/colors/font_color = Color(0.7520626, 0.04775948, 0.75183696, 1)
+Button/colors/font_hover_color = Color(0.5613474, 0.134821, 0.5161106, 1)
+Button/colors/font_pressed_color = Color(0.3572601, 0.012705508, 0.3988328, 1)

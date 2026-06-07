@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://cd2a1wbqjmad1"]
+
+[ext_resource type="Script" uid="uid://dpovg4i5tm0n3" path="res://games/mind_meld/frontend/setup/mind_meld_setup.gd" id="1_l4p68"]
+
+[node name="MindMeldSetup" type="Control" unique_id=1183084110]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_l4p68")
+metadata/_custom_type_script = "uid://c5ftqclxl0d3h"
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=2138702242]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=163625425]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1522703708]
+layout_mode = 2
+text = "Number of players:"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer" unique_id=1416774377]
+layout_mode = 2
+
+[node name="PlayerSlider" type="HSlider" parent="CenterContainer/VBoxContainer/HBoxContainer" unique_id=1424720702]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+min_value = 2.0
+max_value = 5.0
+value = 2.0
+tick_count = 4
+
+[node name="CountLabel" type="Label" parent="CenterContainer/VBoxContainer/HBoxContainer" unique_id=1083487365]
+layout_mode = 2
+text = "2"
+
+[node name="OkButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1356266421]
+layout_mode = 2
+text = "OK"

@@ -1,0 +1,96 @@
+[gd_scene format=3 uid="uid://bayyrm05ipuna"]
+
+[ext_resource type="Texture2D" uid="uid://ceqpvbwa138nd" path="res://main_menu/assets/menu.jpg" id="1_om2fv"]
+[ext_resource type="Theme" uid="uid://2pvmmwwojlrf" path="res://main_menu/assets/button_theme.tres" id="2_67u13"]
+
+[sub_resource type="GDScript" id="GDScript_06t4h"]
+script/source = "extends Control
+
+@onready var _button_aligner: BoxContainer = %ButtonAligner
+const _BUTTON_THEME = preload(\"res://main_menu/assets/button_theme.tres\")
+
+
+func _ready() -> void:
+	_setup_screen_resolution()
+	_setup_menu_buttons()
+
+
+## scale and center the game window on the user's monitor
+func _setup_screen_resolution() -> void:
+	var target_screen: int = DisplayServer.get_primary_screen()
+	var screen_size: Vector2i = DisplayServer.screen_get_size(target_screen)
+	
+	# Calculate the new window size using your percentages
+	var new_width: int = int(screen_size.x * GameManager.SCREEN_PERCENTAGE)
+	var new_height: int = int(screen_size.y * GameManager.SCREEN_PERCENTAGE)
+	var target_size: Vector2i = Vector2i(new_width, new_height)
+	var screen_origin: Vector2i = DisplayServer.screen_get_position(target_screen)
+	
+	# Apply the new size to your application window
+	var window: Window = get_window()
+	window.size = target_size
+	
+	# Center the newly sized window perfectly on the monitor
+	var local_center: Vector2i = (screen_size - target_size) / 2
+	var global_target_position: Vector2i = screen_origin + local_center
+	window.position = global_target_position
+
+
+## generate menu buttons
+func _setup_menu_buttons() -> void:
+	var game_names: Array[String] = GameManager.get_game_names()
+	
+	for game_name_text in game_names:
+		var new_button: Button = Button.new()
+		new_button.text = game_name_text.to_upper()
+		new_button.theme = _BUTTON_THEME
+		
+		# Add the button and push it to the very top of the container layout
+		_button_aligner.add_child(new_button)
+		_button_aligner.move_child(new_button, 0)
+		
+		new_button.pressed.connect(GameManager.start_game.bind(game_name_text))
+
+
+func _on_exit_button_pressed() -> void:
+	get_tree().quit()
+"
+
+[node name="MainMenu" type="Control" unique_id=1319501303]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_06t4h")
+metadata/_custom_type_script = "uid://c5ftqclxl0d3h"
+
+[node name="BackgroundImageContainer" type="TextureRect" parent="." unique_id=139016318]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_om2fv")
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1085510640]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ButtonAligner" type="VBoxContainer" parent="CenterContainer" unique_id=588974739]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ExitButton" type="Button" parent="CenterContainer/ButtonAligner" unique_id=1380162599]
+layout_mode = 2
+theme = ExtResource("2_67u13")
+text = "EXIT"
+
+[connection signal="pressed" from="CenterContainer/ButtonAligner/ExitButton" to="." method="_on_exit_button_pressed"]

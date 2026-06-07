@@ -1,0 +1,75 @@
+[gd_scene format=3 uid="uid://bpfi4pr5nccac"]
+
+[ext_resource type="Script" uid="uid://d1jk46ugu4c2c" path="res://games/mind_meld/frontend/main/mind_meld_scene.gd" id="1_jnc7u"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hkitv"]
+bg_color = Color(0.23226637, 0.021247897, 0.29906774, 1)
+
+[node name="MindMeldScene" type="Control" unique_id=1610974976]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jnc7u")
+
+[node name="Background" type="Panel" parent="." unique_id=54426302]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hkitv")
+
+[node name="MainVBox" type="VBoxContainer" parent="." unique_id=1786964398]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TopBar" type="HBoxContainer" parent="MainVBox" unique_id=183693389]
+layout_mode = 2
+
+[node name="QuitButton" type="Button" parent="MainVBox/TopBar" unique_id=1236482919]
+layout_mode = 2
+focus_mode = 0
+text = "Quit Game"
+
+[node name="ChatScroll" type="ScrollContainer" parent="MainVBox" unique_id=1597627981]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ChatHistory" type="VBoxContainer" parent="MainVBox/ChatScroll" unique_id=856460204]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="IntroMessage" type="Label" parent="MainVBox/ChatScroll/ChatHistory" unique_id=23882614]
+layout_mode = 2
+text = "Welcome to Mind Meld! This is a two player game. The goal is to say the same word at the same time. Each player starts with a random word they chose and then they try to get closer with their words to each other until they say the same word."
+autowrap_mode = 3
+
+[node name="StartMessage" type="Label" parent="MainVBox/ChatScroll/ChatHistory" unique_id=2065069014]
+layout_mode = 2
+text = "Start by typing your first word!"
+autowrap_mode = 3
+
+[node name="InputHBox" type="HBoxContainer" parent="MainVBox" unique_id=978187267]
+layout_mode = 2
+
+[node name="ChatInput" type="LineEdit" parent="MainVBox/InputHBox" unique_id=1620533539]
+layout_mode = 2
+size_flags_horizontal = 3
+keep_editing_on_text_submit = true
+
+[node name="SendButton" type="Button" parent="MainVBox/InputHBox" unique_id=1439671396]
+layout_mode = 2
+focus_mode = 0
+text = "Send"
+
+[connection signal="pressed" from="MainVBox/TopBar/QuitButton" to="." method="_on_quit_button_pressed"]
+[connection signal="text_submitted" from="MainVBox/InputHBox/ChatInput" to="." method="_on_chat_input_text_submitted"]
+[connection signal="pressed" from="MainVBox/InputHBox/SendButton" to="." method="_on_send_button_pressed"]
